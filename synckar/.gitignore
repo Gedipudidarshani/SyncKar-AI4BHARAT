@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment
+.env
+.venv/
+venv/
+
+# RSA keys (generated locally, never committed)
+keys/
+*.pem
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+.docker/
+
+# Kafka / Aiven
+ca.pem
+
+# Node (dashboard)
+node_modules/
+dashboard/dist/
+
+# OS
+.DS_Store
+Thumbs.db

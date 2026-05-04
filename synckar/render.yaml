@@ -1,0 +1,68 @@
+# Render Blueprint — deploy all SyncKar services
+# See: https://render.com/docs/blueprint-spec
+
+services:
+  # ─── Main SyncKar API + Kafka Consumer + Celery Worker ───
+  - type: web
+    name: synckar-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: KAFKA_BOOTSTRAP_SERVERS
+        sync: false
+      - key: KAFKA_SECURITY_PROTOCOL
+        value: SASL_SSL
+      - key: KAFKA_SASL_MECHANISM
+        value: PLAIN
+      - key: KAFKA_SASL_USERNAME
+        sync: false
+      - key: KAFKA_SASL_PASSWORD
+        sync: false
+      - key: KAFKA_SSL_CA_PATH
+        value: /app/ca.pem
+      - key: MOCK_SWS_BASE_URL
+        value: https://synckar-mock-sws.onrender.com
+      - key: MOCK_SHOP_BASE_URL
+        value: https://synckar-mock-shop.onrender.com
+      - key: MOCK_FACTORIES_BASE_URL
+        value: https://synckar-mock-factories.onrender.com
+      - key: RSA_PRIVATE_KEY_BASE64
+        sync: false
+      - key: CELERY_BROKER_URL
+        sync: false
+      - key: CELERY_RESULT_BACKEND
+        sync: false
+
+  # ─── Mock SWS ───
+  - type: web
+    name: synckar-mock-sws
+    runtime: docker
+    dockerfilePath: ./mock_systems/mock_sws/Dockerfile
+    dockerContext: ./mock_systems/mock_sws
+    envVars:
+      - key: PORT
+        value: "8000"
+
+  # ─── Mock Shop Establishment ───
+  - type: web
+    name: synckar-mock-shop
+    runtime: docker
+    dockerfilePath: ./mock_systems/mock_dept_shop/Dockerfile
+    dockerContext: ./mock_systems/mock_dept_shop
+    envVars:
+      - key: PORT
+        value: "8001"
+
+  # ─── Mock Factories ───
+  - type: web
+    name: synckar-mock-factories
+    runtime: docker
+    dockerfilePath: ./mock_systems/mock_dept_factories/Dockerfile
+    dockerContext: ./mock_systems/mock_dept_factories
+    envVars:
+      - key: PORT
+        value: "8002"

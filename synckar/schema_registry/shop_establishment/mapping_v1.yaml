@@ -1,0 +1,39 @@
+# Schema mapping for Shop Establishment adapter — ARCHITECTURE.md §8
+# Version-controlled. Each mapping has a version and certification metadata.
+
+version: "v1"
+certified_by: "data.architect@karnataka.gov.in"
+certified_at: "2026-05-10T14:30:00Z"
+adapter_tier: 1
+protocol: "REST/JSON"
+
+fields:
+  - source_field: "registered_address"
+    target_field: "Buss_Addr_Line1"
+    transform: "truncate(120)"
+    required: true
+
+  - source_field: "primary_contact"
+    target_field: "Contact_Phone"
+    transform: "none"
+    required: true
+
+  - source_field: "authorized_signatory"
+    target_field: "Auth_Sign_Name"
+    transform: "uppercase"
+    required: true
+
+  - source_field: "employee_headcount"
+    target_field: "Emp_Count"
+    transform: "int"
+    required: false
+
+  - source_field: "operational_status"
+    target_field: "Op_Status"
+    transform: "none"
+    required: false
+
+  - source_field: "license_status"
+    target_field: "Lic_Status"
+    transform: "none"
+    required: false

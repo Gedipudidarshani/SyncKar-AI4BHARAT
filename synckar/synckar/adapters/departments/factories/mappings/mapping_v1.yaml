@@ -1,0 +1,54 @@
+# Schema mapping for Factories adapter — ARCHITECTURE.md §8
+# DECISION: Protocol is REST/JSON for prototype; production would use SOAP/XML via zeep.
+
+version: "v1"
+certified_by: "data.architect@karnataka.gov.in"
+certified_at: "2026-05-10T14:30:00Z"
+adapter_tier: 3
+protocol: "REST/JSON"  # DECISION: SOAP/XML in production, REST for prototype
+
+fields:
+  - source_field: "registered_address"
+    target_field: "factory_address"
+    transform: "none"
+    required: true
+
+  - source_field: "primary_contact"
+    target_field: "contact_number"
+    transform: "none"
+    required: true
+
+  - source_field: "authorized_signatory"
+    target_field: "signatory_name"
+    transform: "none"
+    required: true
+
+  - source_field: "employee_headcount"
+    target_field: "worker_count"
+    transform: "int"
+    required: false
+
+  - source_field: "operational_status"
+    target_field: "factory_status"
+    transform: "none"
+    required: false
+
+  - source_field: "license_status"
+    target_field: "lic_status"
+    transform: "none"
+    required: false
+
+  - source_field: "safety_clearance"
+    target_field: "safety_cert"
+    transform: "none"
+    required: false
+
+  - source_field: "labor_violations"
+    target_field: "labor_violations"
+    transform: "none"
+    required: false
+
+  - source_field: "last_inspection_date"
+    target_field: "last_inspection_date"
+    transform: "none"
+    required: false

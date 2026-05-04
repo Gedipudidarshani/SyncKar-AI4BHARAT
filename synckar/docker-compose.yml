@@ -1,0 +1,173 @@
+version: "3.9"
+
+services:
+  # ─── Infrastructure ───
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: synckar-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/tmp/kafka-logs
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - synckar
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: synckar-postgres
+    environment:
+      POSTGRES_USER: synckar
+      POSTGRES_PASSWORD: synckar
+      POSTGRES_DB: synckar
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/01_init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U synckar"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - synckar
+
+  redis:
+    image: redis:7-alpine
+    container_name: synckar-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - synckar
+
+  # ─── Mock Systems (NOT part of synckar package) ───
+  mock-sws:
+    build:
+      context: ./mock_systems/mock_sws
+      dockerfile: Dockerfile
+    container_name: synckar-mock-sws
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+    networks:
+      - synckar
+
+  mock-shop:
+    build:
+      context: ./mock_systems/mock_dept_shop
+      dockerfile: Dockerfile
+    container_name: synckar-mock-shop
+    ports:
+      - "8001:8001"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8001
+    networks:
+      - synckar
+
+  mock-factories:
+    build:
+      context: ./mock_systems/mock_dept_factories
+      dockerfile: Dockerfile
+    container_name: synckar-mock-factories
+    ports:
+      - "8002:8002"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8002
+    networks:
+      - synckar
+
+  # ─── SyncKar Core ───
+  synckar-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: synckar-api
+    ports:
+      - "8080:8080"
+    env_file: .env
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mock-sws:
+        condition: service_started
+      mock-shop:
+        condition: service_started
+      mock-factories:
+        condition: service_started
+    networks:
+      - synckar
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: synckar-celery-worker
+    command: celery -A synckar.workers.celery_app worker --loglevel=info --concurrency=4
+    env_file: .env
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - synckar
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: synckar-celery-beat
+    command: celery -A synckar.workers.celery_app beat --loglevel=info
+    env_file: .env
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - synckar
+
+volumes:
+  kafka_data:
+  pg_data:
+  redis_data:
+
+networks:
+  synckar:
+    driver: bridge

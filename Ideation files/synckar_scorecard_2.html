@@ -1,0 +1,96 @@
+
+<style>
+  .score-bar-bg { background: var(--color-border-tertiary); border-radius: 4px; height: 8px; width: 100%; }
+  .score-bar-fill { height: 8px; border-radius: 4px; }
+  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: 500; }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
+</style>
+<h2 style="font-size:18px;font-weight:500;margin:0 0 4px;color:var(--color-text-primary)">SyncKar — Hackathon rubric scorecard</h2>
+<p style="font-size:13px;color:var(--color-text-secondary);margin:0 0 20px">AI for Bharat · PAN IIT Bangalore · First-principles evaluation</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+  <div class="card">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">Problem understanding</div>
+    <div style="font-size:28px;font-weight:500;color:#185FA5;margin-bottom:8px">9.5 / 10</div>
+    <div class="score-bar-bg"><div class="score-bar-fill" style="width:95%;background:#185FA5"></div></div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">Best section in the document</div>
+  </div>
+  <div class="card">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">Solution quality</div>
+    <div style="font-size:28px;font-weight:500;color:#185FA5;margin-bottom:8px">8.8 / 10</div>
+    <div class="score-bar-bg"><div class="score-bar-fill" style="width:88%;background:#185FA5"></div></div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">Production-grade patterns, minor gaps</div>
+  </div>
+  <div class="card">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">Real-world feasibility</div>
+    <div style="font-size:28px;font-weight:500;color:#0F6E56;margin-bottom:8px">7.5 / 10</div>
+    <div class="score-bar-bg"><div class="score-bar-fill" style="width:75%;background:#0F6E56"></div></div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">Technical: strong. Organisational: underexplored</div>
+  </div>
+  <div class="card">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">Impact clarity</div>
+    <div style="font-size:28px;font-weight:500;color:#0F6E56;margin-bottom:8px">7.0 / 10</div>
+    <div class="score-bar-bg"><div class="score-bar-fill" style="width:70%;background:#0F6E56"></div></div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">Impact is implied, not quantified</div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:12px">
+  <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:10px">AI integration quality</div>
+  <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">Appropriate use of AI · Privacy-first · Non-critical path</div>
+  <div class="score-bar-bg"><div class="score-bar-fill" style="width:72%;background:#3B6D11"></div></div>
+  <div style="display:flex;justify-content:space-between;margin-top:6px">
+    <span style="font-size:12px;color:var(--color-text-secondary)">7.2 / 10 — Prudent but needs stronger framing for judges</span>
+  </div>
+</div>
+
+<div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin:16px 0 8px">Key signals by component</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+
+  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+    <span style="width:12px;height:12px;border-radius:50%;background:#1D9E75;flex-shrink:0"></span>
+    <span style="color:var(--color-text-primary);flex:1">Transactional Outbox + Kafka + per-UBID partitioning</span>
+    <span class="pill" style="background:var(--color-background-success);color:var(--color-text-success)">Strong</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+    <span style="width:12px;height:12px;border-radius:50%;background:#1D9E75;flex-shrink:0"></span>
+    <span style="color:var(--color-text-primary);flex:1">Deterministic SHA-256 idempotency key (no timestamps)</span>
+    <span class="pill" style="background:var(--color-background-success);color:var(--color-text-success)">Strong</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+    <span style="width:12px;height:12px;border-radius:50%;background:#1D9E75;flex-shrink:0"></span>
+    <span style="color:var(--color-text-primary);flex:1">BSA 2023-mapped audit ledger with RSA per-row signing</span>
+    <span class="pill" style="background:var(--color-background-success);color:var(--color-text-success)">Strong</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+    <span style="width:12px;height:12px;border-radius:50%;background:#1D9E75;flex-shrink:0"></span>
+    <span style="color:var(--color-text-primary);flex:1">9 failure modes with explicit recovery strategies</span>
+    <span class="pill" style="background:var(--color-background-success);color:var(--color-text-success)">Strong</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+    <span style="width:12px;height:12px;border-radius:50%;background:#BA7517;flex-shrink:0"></span>
+    <span style="color:var(--color-text-primary);flex:1">UBID coverage gap — assumes 100% adoption, real-world is not</span>
+    <span class="pill" style="background:var(--color-background-warning);color:var(--color-text-warning)">Gap</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+    <span style="width:12px;height:12px;border-radius:50%;background:#BA7517;flex-shrink:0"></span>
+    <span style="color:var(--color-text-primary);flex:1">Conflict window edge case — silent overwrite at T+16 min</span>
+    <span class="pill" style="background:var(--color-background-warning);color:var(--color-text-warning)">Gap</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+    <span style="width:12px;height:12px;border-radius:50%;background:#BA7517;flex-shrink:0"></span>
+    <span style="color:var(--color-text-primary);flex:1">No throughput numbers — 2M × 40 depts, events/sec unquantified</span>
+    <span class="pill" style="background:var(--color-background-warning);color:var(--color-text-warning)">Gap</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+    <span style="width:12px;height:12px;border-radius:50%;background:#A32D2D;flex-shrink:0"></span>
+    <span style="color:var(--color-text-primary);flex:1">No dept-by-dept API readiness evidence</span>
+    <span class="pill" style="background:var(--color-background-danger);color:var(--color-text-danger)">Risk</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+    <span style="width:12px;height:12px;border-radius:50%;background:#A32D2D;flex-shrink:0"></span>
+    <span style="color:var(--color-text-primary);flex:1">AI framing defensive — judges may undervalue intentional restraint</span>
+    <span class="pill" style="background:var(--color-background-danger);color:var(--color-text-danger)">Risk</span>
+  </div>
+
+</div>
