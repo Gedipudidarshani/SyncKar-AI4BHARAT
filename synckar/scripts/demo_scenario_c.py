@@ -11,10 +11,15 @@ import time
 import threading
 
 import httpx
+import os
 
-SWS_URL = "http://localhost:8000"
-FACTORIES_URL = "http://localhost:8002"
-SYNCKAR_URL = "http://localhost:18080"
+SWS_URL = os.environ.get("SWS_URL") or os.environ.get(
+    "MOCK_SWS_BASE_URL", "http://localhost:8000/sws"
+)
+FACTORIES_URL = os.environ.get("FACTORIES_URL") or os.environ.get(
+    "MOCK_FACTORIES_BASE_URL", "http://localhost:8000/factories"
+)
+SYNCKAR_URL = os.environ.get("SYNCKAR_URL", "http://localhost:18080")
 
 UBID = "KA-TEST-0003"
 SWS_ADDRESS = "111 MG Road, Updated by SWS, Bangalore 560001"

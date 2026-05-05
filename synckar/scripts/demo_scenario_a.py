@@ -12,9 +12,15 @@ import httpx
 
 import os
 
-SWS_URL = os.environ.get("SWS_URL", "http://localhost:8000")
-SHOP_URL = os.environ.get("SHOP_URL", "http://localhost:8001")
-FACTORIES_URL = os.environ.get("FACTORIES_URL", "http://localhost:8002")
+SWS_URL = os.environ.get("SWS_URL") or os.environ.get(
+    "MOCK_SWS_BASE_URL", "http://localhost:8000/sws"
+)
+SHOP_URL = os.environ.get("SHOP_URL") or os.environ.get(
+    "MOCK_SHOP_BASE_URL", "http://localhost:8000/shop"
+)
+FACTORIES_URL = os.environ.get("FACTORIES_URL") or os.environ.get(
+    "MOCK_FACTORIES_BASE_URL", "http://localhost:8000/factories"
+)
 SYNCKAR_URL = os.environ.get("SYNCKAR_URL", "http://localhost:18080")
 
 UBID = "KA-TEST-0001"

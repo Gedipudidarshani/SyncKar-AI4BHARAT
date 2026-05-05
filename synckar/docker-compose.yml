@@ -2,30 +2,40 @@ version: "3.9"
 
 services:
   # ─── Infrastructure ───
-  kafka:
-    image: apache/kafka:3.7.0
-    container_name: synckar-kafka
-    environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+  redpanda:
+    image: redpanda/redpanda:latest
+    container_name: synckar-redpanda
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - 1G
+      - --reserve-memory
+      - 0M
+      - --node-id
+      - "0"
+      - --check=false
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda:9092
+      - --rpc-addr
+      - 0.0.0.0:33145
+      - --advertise-rpc-addr
+      - redpanda:33145
     ports:
       - "9092:9092"
-    # volumes:
-    #   - kafka_data:/tmp/kafka-logs
+      - "9644:9644"
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
     healthcheck:
-      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      test: ["CMD-SHELL", "rpk cluster info --brokers localhost:9092 >/dev/null 2>&1 || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
     networks:
       - synckar
 
@@ -33,8 +43,8 @@ services:
     image: postgres:16-alpine
     container_name: synckar-postgres
     environment:
-      POSTGRES_USER: synckar
-      POSTGRES_PASSWORD: synckar
+      POSTGRES_USER: synckar_app
+      POSTGRES_PASSWORD: synckar_app
       POSTGRES_DB: synckar
     ports:
       - "15432:5432"
@@ -93,11 +103,19 @@ services:
       - "18080:8080"
     env_file: .env
     environment:
+      - DATABASE_URL=postgresql://synckar_app:synckar_app@postgres:5432/synckar
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
+      - KAFKA_SECURITY_PROTOCOL=PLAINTEXT
       # Point adapters at the combined mock service
       - MOCK_SWS_BASE_URL=http://mock-systems:8000/sws
       - MOCK_SHOP_BASE_URL=http://mock-systems:8000/shop
       - MOCK_FACTORIES_BASE_URL=http://mock-systems:8000/factories
     depends_on:
+      redpanda:
+        condition: service_healthy
       postgres:
         condition: service_healthy
       redis:
@@ -108,7 +126,7 @@ services:
       - synckar
 
 volumes:
-  kafka_data:
+  redpanda_data:
   pg_data:
   redis_data:
 

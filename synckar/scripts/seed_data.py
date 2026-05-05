@@ -9,13 +9,20 @@ Distribution:
 """
 
 import httpx
+import os
 import sys
 import time
 
-# Default URLs — override with env vars if deployed
-SWS_URL = "http://localhost:8000"
-SHOP_URL = "http://localhost:8001"
-FACTORIES_URL = "http://localhost:8002"
+# Default URLs — override with env vars or CLI args if deployed
+SWS_URL = os.environ.get("SWS_URL") or os.environ.get(
+    "MOCK_SWS_BASE_URL", "http://localhost:8000/sws"
+)
+SHOP_URL = os.environ.get("SHOP_URL") or os.environ.get(
+    "MOCK_SHOP_BASE_URL", "http://localhost:8000/shop"
+)
+FACTORIES_URL = os.environ.get("FACTORIES_URL") or os.environ.get(
+    "MOCK_FACTORIES_BASE_URL", "http://localhost:8000/factories"
+)
 
 
 def generate_businesses():

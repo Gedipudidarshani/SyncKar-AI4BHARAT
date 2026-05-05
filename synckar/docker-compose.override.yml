@@ -1,0 +1,52 @@
+# docker-compose.override.yml
+# EC2-specific overrides — applied on top of docker-compose.yml.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.override.yml up --build -d
+#
+# What this file does:
+#   - Adds restart: unless-stopped to all services (survives EC2 reboots)
+#   - Reduces Redpanda memory from 1G → 512M to fit within t3.small's 2 GB RAM
+#   - Keeps all other settings (ports, volumes, networks) from the base file
+
+version: "3.9"
+
+services:
+  redpanda:
+    restart: unless-stopped
+    # Reduce memory for t3.small (2 GB total RAM).
+    # Overrides the --memory flag from the base docker-compose.yml.
+    # All other flags (advertise-kafka-addr, rpc-addr, etc.) are kept identical.
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - 512M
+      - --reserve-memory
+      - 0M
+      - --node-id
+      - "0"
+      - --check=false
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda:9092
+      - --rpc-addr
+      - 0.0.0.0:33145
+      - --advertise-rpc-addr
+      - redpanda:33145
+
+  postgres:
+    restart: unless-stopped
+
+  redis:
+    restart: unless-stopped
+
+  mock-systems:
+    restart: unless-stopped
+
+  synckar-api:
+    restart: unless-stopped
