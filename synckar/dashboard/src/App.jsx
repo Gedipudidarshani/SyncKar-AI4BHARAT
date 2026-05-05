@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import './index.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -109,13 +110,16 @@ function App() {
               onClick={() => setPage(p)}
             >
               {p === 'overview' ? '📊 Overview' :
-               p === 'mock'     ? '🏛️ Mock Systems' :
+               p === 'mock'     ? '🖥️ Mock Controls' :
                p === 'audit'    ? '📋 Audit Trail' :
                p === 'conflicts'? '⚔️ Conflicts' :
                p === 'dlq'      ? '📮 DLQ' :
                                   '🔐 BSA Verify'}
             </button>
           ))}
+          <Link to="/portal" className="nav-btn nav-btn-portals">
+            🏛️ Dept. Portals
+          </Link>
         </nav>
       </header>
 
