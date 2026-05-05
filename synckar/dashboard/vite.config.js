@@ -1,15 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
+// VITE_BASE_PATH controls the base URL:
+//   - AWS (served at /dashboard/): set VITE_BASE_PATH=/dashboard/
+//   - Vercel (served at /):        leave unset or set VITE_BASE_PATH=/
 export default defineConfig({
   plugins: [react()],
-  // base must match the FastAPI mount path so asset URLs resolve correctly
-  base: '/dashboard/',
-  build: {
-    rollupOptions: {
-      // Single entry point — React Router handles all client-side routing
-      input: 'index.html',
-    },
-  },
+  base: process.env.VITE_BASE_PATH || '/dashboard/',
 })
