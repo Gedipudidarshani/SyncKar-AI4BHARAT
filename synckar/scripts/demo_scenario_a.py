@@ -10,10 +10,12 @@ import time
 
 import httpx
 
-SWS_URL = "http://localhost:8000"
-SHOP_URL = "http://localhost:8001"
-FACTORIES_URL = "http://localhost:8002"
-SYNCKAR_URL = "http://localhost:18080"
+import os
+
+SWS_URL = os.environ.get("SWS_URL", "http://localhost:8000")
+SHOP_URL = os.environ.get("SHOP_URL", "http://localhost:8001")
+FACTORIES_URL = os.environ.get("FACTORIES_URL", "http://localhost:8002")
+SYNCKAR_URL = os.environ.get("SYNCKAR_URL", "http://localhost:18080")
 
 UBID = "KA-TEST-0001"
 NEW_ADDRESS = "999 New MG Road, Indiranagar, Bangalore 560038"
