@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from synckar.api.routes import webhooks, audit, dlq, health
+from synckar.api.routes import webhooks, audit, dlq, health, mock_proxy
 
 logger = structlog.get_logger()
 
@@ -46,6 +46,7 @@ app.include_router(health.router, tags=["Health"])
 app.include_router(audit.router, prefix="/api/audit", tags=["Audit"])
 app.include_router(dlq.router, prefix="/api/dlq", tags=["DLQ"])
 app.include_router(webhooks.router, prefix="/api/webhooks", tags=["Webhooks"])
+app.include_router(mock_proxy.router, prefix="/api", tags=["Mock Systems"])
 
 # ─── Serve the built React dashboard ───
 # The Dockerfile builds the dashboard into /app/dashboard/dist.
