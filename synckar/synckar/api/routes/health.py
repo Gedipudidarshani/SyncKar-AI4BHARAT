@@ -36,7 +36,19 @@ def health_check():
     # Kafka
     try:
         from confluent_kafka.admin import AdminClient
-        admin = AdminClient({"bootstrap.servers": settings.kafka.bootstrap_servers})
+        kafka_conf = {"bootstrap.servers": settings.kafka.bootstrap_servers}
+        if settings.kafka.security_protocol != "PLAINTEXT":
+            kafka_conf["security.protocol"] = settings.kafka.security_protocol
+        if settings.kafka.sasl_mechanism:
+            kafka_conf["sasl.mechanism"] = settings.kafka.sasl_mechanism
+        if settings.kafka.sasl_username:
+            kafka_conf["sasl.username"] = settings.kafka.sasl_username
+        if settings.kafka.sasl_password:
+            kafka_conf["sasl.password"] = settings.kafka.sasl_password
+        if settings.kafka.ssl_ca_path:
+            kafka_conf["ssl.ca.location"] = settings.kafka.ssl_ca_path
+
+        admin = AdminClient(kafka_conf)
         admin.list_topics(timeout=3)
         checks["kafka"] = "healthy"
     except Exception as e:

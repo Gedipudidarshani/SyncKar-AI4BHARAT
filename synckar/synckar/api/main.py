@@ -90,9 +90,25 @@ async def startup():
     into one, staying within the free-plan 4-service limit.
     """
     logger.info("synckar_api_starting")
+    _log_kafka_config()
     _start_kafka_consumers()
     _start_celery_worker()
     _start_celery_beat()
+
+
+def _log_kafka_config():
+    """Log Kafka connection config without secrets for deployment debugging."""
+    from synckar.config import settings
+
+    logger.info(
+        "kafka_config",
+        bootstrap_servers=settings.kafka.bootstrap_servers,
+        security_protocol=settings.kafka.security_protocol,
+        sasl_mechanism=settings.kafka.sasl_mechanism or "none",
+        sasl_username_set=bool(settings.kafka.sasl_username),
+        sasl_password_set=bool(settings.kafka.sasl_password),
+        ssl_ca_path=settings.kafka.ssl_ca_path or "none",
+    )
 
 
 def _start_kafka_consumers():
