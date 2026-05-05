@@ -4,6 +4,7 @@ WORKDIR /app
 
 # ─── Install Python dependencies ───
 COPY pyproject.toml .
+COPY alembic.ini .
 COPY synckar/ synckar/
 COPY schema_registry/ schema_registry/
 COPY migrations/ migrations/
