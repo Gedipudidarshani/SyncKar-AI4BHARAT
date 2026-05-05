@@ -1,5 +1,6 @@
 """Health and stats routes."""
 
+import os
 import redis
 import structlog
 import psycopg2.extras
@@ -7,6 +8,7 @@ from fastapi import APIRouter
 
 from synckar.config import settings
 from synckar import db
+from synckar.kafka_client import build_kafka_conf
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -36,20 +38,9 @@ def health_check():
     # Kafka
     try:
         from confluent_kafka.admin import AdminClient
-        kafka_conf = {"bootstrap.servers": settings.kafka.bootstrap_servers}
-        if settings.kafka.security_protocol != "PLAINTEXT":
-            kafka_conf["security.protocol"] = settings.kafka.security_protocol
-        if settings.kafka.sasl_mechanism:
-            kafka_conf["sasl.mechanism"] = settings.kafka.sasl_mechanism
-        if settings.kafka.sasl_username:
-            kafka_conf["sasl.username"] = settings.kafka.sasl_username
-        if settings.kafka.sasl_password:
-            kafka_conf["sasl.password"] = settings.kafka.sasl_password
-        if settings.kafka.ssl_ca_path:
-            kafka_conf["ssl.ca.location"] = settings.kafka.ssl_ca_path
-
+        kafka_conf = build_kafka_conf()
         admin = AdminClient(kafka_conf)
-        admin.list_topics(timeout=3)
+        admin.list_topics(timeout=10)
         checks["kafka"] = "healthy"
     except Exception as e:
         checks["kafka"] = f"unhealthy: {e}"

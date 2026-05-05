@@ -8,12 +8,14 @@ even during network partitions (Solution §10, Failure #6).
 """
 
 import json
+import os
 from uuid import UUID
 
 import structlog
 from confluent_kafka import Producer, KafkaError
 
 from synckar.config import settings
+from synckar.kafka_client import build_kafka_conf
 from synckar import db
 from synckar.models.service_request import CanonicalServiceRequest
 
@@ -27,17 +29,7 @@ def _get_db_connection():
 
 def _get_kafka_producer() -> Producer:
     """Create a Kafka producer with config from settings."""
-    conf = {
-        "bootstrap.servers": settings.kafka.bootstrap_servers,
-    }
-    if settings.kafka.security_protocol != "PLAINTEXT":
-        conf["security.protocol"] = settings.kafka.security_protocol
-    if settings.kafka.sasl_mechanism:
-        conf["sasl.mechanism"] = settings.kafka.sasl_mechanism
-        conf["sasl.username"] = settings.kafka.sasl_username
-        conf["sasl.password"] = settings.kafka.sasl_password
-    if settings.kafka.ssl_ca_path:
-        conf["ssl.ca.location"] = settings.kafka.ssl_ca_path
+    conf = build_kafka_conf()
     return Producer(conf)
 
 

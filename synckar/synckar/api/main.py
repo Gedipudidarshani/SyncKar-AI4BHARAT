@@ -152,8 +152,9 @@ def _start_kafka_consumers():
         while True:
             consumer = None
             try:
+                bootstrap_servers = os.environ.get("KAFKA_BOOTSTRAP_SERVERS") or settings.kafka.bootstrap_servers
                 conf = {
-                    "bootstrap.servers": settings.kafka.bootstrap_servers,
+                    "bootstrap.servers": bootstrap_servers,
                     "group.id": "synckar-dispatcher",
                     "auto.offset.reset": "earliest",
                     "enable.auto.commit": False,
