@@ -8,8 +8,14 @@ COPY synckar/ synckar/
 COPY schema_registry/ schema_registry/
 COPY migrations/ migrations/
 COPY scripts/ scripts/
+COPY mock_systems/ mock_systems/
 
 RUN pip install --no-cache-dir .
+
+RUN touch mock_systems/__init__.py \
+    && touch mock_systems/mock_sws/__init__.py \
+    && touch mock_systems/mock_dept_shop/__init__.py \
+    && touch mock_systems/mock_dept_factories/__init__.py
 
 # ─── Generate RSA keys for audit signing (BSA 2023) ───
 # In production, override with RSA_PRIVATE_KEY_BASE64 env var instead.
