@@ -50,19 +50,33 @@ export default function PortalSWS() {
     e.preventDefault()
     setSaving(true)
     try {
+      const payload = { ...form }
+      // Auto-increment employee_headcount when nothing syncable has changed
+      if (
+        payload.registered_address === record?.registered_address &&
+        payload.authorized_signatory === record?.authorized_signatory &&
+        payload.primary_contact === record?.primary_contact &&
+        String(payload.employee_headcount) === String(record?.employee_headcount) &&
+        payload.operational_status === record?.operational_status &&
+        payload.license_status === record?.license_status
+      ) {
+        payload.employee_headcount = (Number(payload.employee_headcount) || 0) + 1
+        setForm(f => ({ ...f, employee_headcount: payload.employee_headcount }))
+      }
+
       const res = await fetch(`${API_BASE}/api/mock/sws/record/${selectedUbid}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       })
       if (!res.ok) throw new Error('Update failed')
       const data = await res.json()
       const updated = data.updated_fields || []
-      
+
       if (updated.length === 0) {
         showToast('No fields were modified. SyncKar event not triggered.', 'warning')
       } else {
-        showToast('Record updated successfully. Changes are syncing.', 'success')
+        showToast('Record updated. SyncKar is propagating changes.', 'success')
       }
 
       setActivity(a => [{

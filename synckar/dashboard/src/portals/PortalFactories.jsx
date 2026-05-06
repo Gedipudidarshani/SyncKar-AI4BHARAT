@@ -50,19 +50,32 @@ export default function PortalFactories() {
     e.preventDefault()
     setSaving(true)
     try {
+      const payload = { ...form }
+      // Auto-increment worker_count when nothing syncable has changed
+      if (
+        payload.factory_address === record?.factory_address &&
+        payload.signatory_name  === record?.signatory_name &&
+        payload.contact_number  === record?.contact_number &&
+        String(payload.worker_count) === String(record?.worker_count) &&
+        payload.factory_status  === record?.factory_status
+      ) {
+        payload.worker_count = (Number(payload.worker_count) || 0) + 1
+        setForm(f => ({ ...f, worker_count: payload.worker_count }))
+      }
+
       const res = await fetch(`${API_BASE}/api/mock/factories/record/${selectedUbid}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       })
       if (!res.ok) throw new Error('Update failed')
       const data = await res.json()
       const updated = data.updated_fields || []
-      
+
       if (updated.length === 0) {
         showToast('No fields were modified. SyncKar event not triggered.', 'warning')
       } else {
-        showToast('Record updated successfully. Changes are syncing.', 'success')
+        showToast('Record updated. SyncKar is propagating changes.', 'success')
       }
 
       setActivity(a => [{

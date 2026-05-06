@@ -50,19 +50,32 @@ export default function PortalShop() {
     e.preventDefault()
     setSaving(true)
     try {
+      const payload = { ...form }
+      // Auto-increment Emp_Count when nothing has changed, so a real event fires
+      if (
+        payload.Buss_Addr_Line1 === record?.Buss_Addr_Line1 &&
+        payload.Auth_Sign_Name  === record?.Auth_Sign_Name &&
+        payload.Contact_Phone   === record?.Contact_Phone &&
+        String(payload.Emp_Count) === String(record?.Emp_Count) &&
+        payload.Op_Status       === record?.Op_Status
+      ) {
+        payload.Emp_Count = (Number(payload.Emp_Count) || 0) + 1
+        setForm(f => ({ ...f, Emp_Count: payload.Emp_Count }))
+      }
+
       const res = await fetch(`${API_BASE}/api/mock/shop/record/${selectedUbid}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       })
       if (!res.ok) throw new Error('Update failed')
       const data = await res.json()
       const updated = data.updated_fields || []
-      
+
       if (updated.length === 0) {
         showToast('No fields were modified. SyncKar event not triggered.', 'warning')
       } else {
-        showToast('Record updated successfully. Changes are syncing.', 'success')
+        showToast('Record updated. SyncKar is propagating changes.', 'success')
       }
 
       setActivity(a => [{
