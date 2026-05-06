@@ -173,7 +173,16 @@ function App() {
           />
         )}
         {page === 'conflicts' && <ConflictsPage conflicts={conflicts} onRefresh={fetchConflicts} />}
-        {page === 'dlq'       && <DLQPage dlq={dlq} />}
+        {page === 'dlq'       && <DLQPage dlq={dlq} onRetry={async (id) => {
+          try {
+            const res = await fetch(`${API_BASE}/api/dlq/${id}/resolve`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'retry' })
+            })
+            if (res.ok) fetchDlq()
+          } catch (e) { console.error('DLQ retry failed:', e) }
+        }} />}
         {page === 'verify'    && (
           <VerifyPage
             audit={audit}
@@ -641,7 +650,7 @@ function ConflictsPage({ conflicts, onRefresh }) {
 
 // ─── DLQ ─────────────────────────────────────────────────────────────────────
 
-function DLQPage({ dlq }) {
+function DLQPage({ dlq, onRetry }) {
   return (
     <div>
       <div className="page-title">
@@ -680,7 +689,15 @@ function DLQPage({ dlq }) {
                 <td>{item.source_system}</td>
                 <td style={{ maxWidth: 320, fontSize: '12px', lineHeight: 1.4, color: 'var(--text-secondary)' }}>{item.error_reason}</td>
                 <td><span className="badge badge-error">{item.status}</span></td>
-                <td><button className="btn btn-outline btn-sm">Retry</button></td>
+                <td>
+                  <button 
+                    className="btn btn-outline btn-sm" 
+                    onClick={() => onRetry(item.id)}
+                    disabled={item.status === 'RETRIED' || item.status === 'RESOLVED'}
+                  >
+                    Retry
+                  </button>
+                </td>
               </tr>
             ))}
             {dlq.length === 0 && (

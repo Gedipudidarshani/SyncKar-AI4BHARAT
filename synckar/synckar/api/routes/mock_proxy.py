@@ -279,12 +279,46 @@ async def hard_reset_all():
     # 3. Reset Redis
     try:
         import redis
+        import time
+        from datetime import datetime, timezone
+        
+        # Wait slightly to ensure seed transaction timestamps are strictly less than our new watermark
+        time.sleep(0.5)
+        now_iso = datetime.now(timezone.utc).isoformat()
+        
         r = redis.Redis.from_url(settings.redis.url, decode_responses=True)
         deleted = 0
-        for pattern in ["sws:watermark", "factories:watermark", "shop_establishment:watermark", "idem:*", "conflict_window:*", "circuit:*", "rate_limit:*"]:
+        
+        # Delete idempotency, circuit breakers, rate limits
+        for pattern in ["idem:*", "conflict_window:*", "circuit:*", "rate_limit:*"]:
             keys = r.keys(pattern)
             if keys:
                 deleted += r.delete(*keys)
+                
+        # Set watermarks to NOW so pollers ignore the newly seeded data
+        r.set("watermark:sws", now_iso)
+        r.set("watermark:shop_establishment", now_iso)
+        r.set("watermark:factories", now_iso)
+        
+        # Also update Postgres poller_state so DB fallback is correct
+        from synckar.db import get_conn, put_conn
+        conn = get_conn()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("TRUNCATE poller_state CASCADE;") # just in case
+            cursor.execute(
+                """
+                INSERT INTO poller_state (system_id, watermark, updated_at) VALUES 
+                ('sws', %s, now()),
+                ('shop_establishment', %s, now()),
+                ('factories', %s, now())
+                """,
+                (now_iso, now_iso, now_iso)
+            )
+            conn.commit()
+        finally:
+            put_conn(conn)
+        
         redis_cleared = True
     except Exception as e:
         logger.error("redis_flush_failed", error=str(e))
