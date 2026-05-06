@@ -137,7 +137,7 @@ function App() {
     <div className="app">
       <header className="header">
         <div className="header-logo">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
             <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
             <line x1="12" y1="22.08" x2="12" y2="12"></line>
@@ -396,7 +396,7 @@ function LiveDemoConsole({ API_BASE }) {
         {/* Source System */}
         <div className={`pipeline-node ${activeFlow?.startsWith('sws-') ? 'active-pulse' : ''}`}>
           <div className="pipeline-node-header">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
             </svg>
             <div>
@@ -408,7 +408,7 @@ function LiveDemoConsole({ API_BASE }) {
 
         {/* Middleware */}
         <div className="pipeline-middleware">
-          <svg className="middleware-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg aria-hidden="true" className="middleware-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
           </svg>
           <div className="middleware-title">SyncKar</div>
@@ -421,7 +421,7 @@ function LiveDemoConsole({ API_BASE }) {
         {/* Target Systems */}
         <div className={`pipeline-node ${activeFlow?.endsWith('factories') || activeFlow?.endsWith('shop_establishment') ? 'active-pulse' : ''}`}>
           <div className="pipeline-node-header">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -439,22 +439,22 @@ function LiveDemoConsole({ API_BASE }) {
       {conflictDetail && (
         <div className="conflict-card">
           <h4>⚡ Conflict Resolution — Explained</h4>
-          <p style={{ fontSize: '13px', color: '#78350f', marginBottom: '12px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '14px', color: '#713f12', marginBottom: '16px', lineHeight: 1.6 }}>
             Two systems updated the <strong>same field</strong> (<code>{conflictDetail.field}</code>) for the same business 
             (<code>{conflictDetail.ubid}</code>) within the conflict detection window. SyncKar automatically applied 
             the <strong>{formatPolicy(conflictDetail.policy_applied)}</strong> policy to resolve this without human intervention.
           </p>
           <div className="conflict-detail-grid">
             <div className="conflict-value-box conflict-winner">
-              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--status-success)', marginBottom: '4px' }}>✓ WINNER — Value Kept</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>{conflictDetail.winning_value}</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--status-success)', marginBottom: '6px' }}>✓ WINNER — Value Kept</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px' }}>{conflictDetail.winning_value}</div>
             </div>
             <div className="conflict-value-box conflict-loser">
-              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--status-error)', marginBottom: '4px' }}>✗ DISCARDED — Logged in Audit</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>{conflictDetail.losing_value}</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--status-error)', marginBottom: '6px' }}>✗ DISCARDED — Logged in Audit</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px' }}>{conflictDetail.losing_value}</div>
             </div>
           </div>
-          <p style={{ fontSize: '11px', color: '#78350f', marginTop: '8px' }}>
+          <p style={{ fontSize: '13px', color: '#713f12', marginTop: '12px' }}>
             The discarded value is never deleted — it's preserved in the immutable audit ledger for legal traceability.
           </p>
         </div>
@@ -745,12 +745,12 @@ function VerifyPage({ audit, verifyResult, onVerify, onFetchAudit }) {
         <div className="verify-card">
           <div className={`verify-result ${verifyResult.signature_valid ? 'valid' : 'invalid'}`}>
             {verifyResult.signature_valid ? (
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+              <svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
               </svg>
             ) : (
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+              <svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="15" y1="9" x2="9" y2="15"></line>
                 <line x1="9" y1="9" x2="15" y2="15"></line>

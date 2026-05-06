@@ -136,7 +136,7 @@ export default function PortalShop() {
         <div className="portal-header-inner">
           <div className="portal-emblem">
             <div className="portal-emblem-circle shop-emblem">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               </svg>
             </div>
@@ -180,6 +180,8 @@ export default function PortalShop() {
               <div className="portal-card-header shop-header">
                 <span>Record Editor</span>
                 <select
+                  name="selectedUbid"
+                  autoComplete="off"
                   className="portal-ubid-select"
                   value={selectedUbid}
                   onChange={e => setSelectedUbid(e.target.value)}
@@ -189,7 +191,7 @@ export default function PortalShop() {
               </div>
 
               {loading ? (
-                <div className="portal-loading">Loading record details...</div>
+                <div className="portal-loading">Loading record details…</div>
               ) : !record ? (
                 <div className="portal-empty">Record not found for {selectedUbid}. Please seed the database.</div>
               ) : (
@@ -209,6 +211,8 @@ export default function PortalShop() {
                     <label>Business Address</label>
                     <input
                       type="text"
+                      name="Buss_Addr_Line1"
+                      autoComplete="street-address"
                       className="portal-input"
                       value={form.Buss_Addr_Line1}
                       onChange={e => setForm(f => ({ ...f, Buss_Addr_Line1: e.target.value }))}
@@ -221,6 +225,8 @@ export default function PortalShop() {
                       <label>Authorized Signatory</label>
                       <input
                         type="text"
+                        name="Auth_Sign_Name"
+                        autoComplete="name"
                         className="portal-input"
                         value={form.Auth_Sign_Name}
                         onChange={e => setForm(f => ({ ...f, Auth_Sign_Name: e.target.value }))}
@@ -230,6 +236,8 @@ export default function PortalShop() {
                       <label>Contact Phone</label>
                       <input
                         type="text"
+                        name="Contact_Phone"
+                        autoComplete="tel"
                         className="portal-input"
                         value={form.Contact_Phone}
                         onChange={e => setForm(f => ({ ...f, Contact_Phone: e.target.value }))}
@@ -244,6 +252,8 @@ export default function PortalShop() {
                       <label>Employee Count</label>
                       <input
                         type="number"
+                        name="Emp_Count"
+                        autoComplete="off"
                         className="portal-input"
                         value={form.Emp_Count}
                         onChange={e => setForm(f => ({ ...f, Emp_Count: Number(e.target.value) }))}
@@ -252,6 +262,7 @@ export default function PortalShop() {
                     <div className="portal-field">
                       <label>Operational Status</label>
                       <select
+                        name="Op_Status"
                         className="portal-input"
                         value={form.Op_Status}
                         onChange={e => setForm(f => ({ ...f, Op_Status: e.target.value }))}
@@ -265,6 +276,8 @@ export default function PortalShop() {
                       <label>Compliance Score (0-100)</label>
                       <input
                         type="number"
+                        name="Compliance_Score"
+                        autoComplete="off"
                         className="portal-input"
                         value={form.Compliance_Score}
                         onChange={e => setForm(f => ({ ...f, Compliance_Score: Number(e.target.value) }))}

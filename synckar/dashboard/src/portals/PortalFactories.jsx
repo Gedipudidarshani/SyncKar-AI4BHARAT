@@ -136,7 +136,7 @@ export default function PortalFactories() {
         <div className="portal-header-inner">
           <div className="portal-emblem">
             <div className="portal-emblem-circle factories-emblem">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M2 20h20M4 20V4l8 6 8-6v16"></path>
               </svg>
             </div>
@@ -180,6 +180,8 @@ export default function PortalFactories() {
               <div className="portal-card-header factories-header-card">
                 <span>Record Editor</span>
                 <select
+                  name="selectedUbid"
+                  autoComplete="off"
                   className="portal-ubid-select"
                   value={selectedUbid}
                   onChange={e => setSelectedUbid(e.target.value)}
@@ -189,7 +191,7 @@ export default function PortalFactories() {
               </div>
 
               {loading ? (
-                <div className="portal-loading">Loading record details...</div>
+                <div className="portal-loading">Loading record details…</div>
               ) : !record ? (
                 <div className="portal-empty">Record not found for {selectedUbid}. Please seed the database.</div>
               ) : (
@@ -209,6 +211,8 @@ export default function PortalFactories() {
                     <label>Factory Address</label>
                     <input
                       type="text"
+                      name="Factory_Address"
+                      autoComplete="street-address"
                       className="portal-input"
                       value={form.factory_address}
                       onChange={e => setForm(f => ({ ...f, factory_address: e.target.value }))}
@@ -221,6 +225,8 @@ export default function PortalFactories() {
                       <label>Signatory Name</label>
                       <input
                         type="text"
+                        name="Manager_Name"
+                        autoComplete="name"
                         className="portal-input"
                         value={form.signatory_name}
                         onChange={e => setForm(f => ({ ...f, signatory_name: e.target.value }))}
@@ -230,6 +236,8 @@ export default function PortalFactories() {
                       <label>Contact Number</label>
                       <input
                         type="text"
+                        name="Emergency_Contact"
+                        autoComplete="tel"
                         className="portal-input"
                         value={form.contact_number}
                         onChange={e => setForm(f => ({ ...f, contact_number: e.target.value }))}
@@ -244,6 +252,8 @@ export default function PortalFactories() {
                       <label>Worker Count</label>
                       <input
                         type="number"
+                        name="Worker_Count"
+                        autoComplete="off"
                         className="portal-input"
                         value={form.worker_count}
                         onChange={e => setForm(f => ({ ...f, worker_count: Number(e.target.value) }))}
@@ -252,6 +262,7 @@ export default function PortalFactories() {
                     <div className="portal-field">
                       <label>Factory Status</label>
                       <select
+                        name="Factory_Status"
                         className="portal-input"
                         value={form.factory_status}
                         onChange={e => setForm(f => ({ ...f, factory_status: e.target.value }))}
@@ -264,6 +275,7 @@ export default function PortalFactories() {
                     <div className="portal-field">
                       <label>Hazard Category</label>
                       <select
+                        name="hazard_category"
                         className="portal-input"
                         value={form.hazard_category}
                         onChange={e => setForm(f => ({ ...f, hazard_category: e.target.value }))}

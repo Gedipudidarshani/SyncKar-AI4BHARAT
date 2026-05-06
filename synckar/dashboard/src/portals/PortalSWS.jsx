@@ -137,7 +137,7 @@ export default function PortalSWS() {
         <div className="portal-header-inner">
           <div className="portal-emblem">
             <div className="portal-emblem-circle">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
               </svg>
             </div>
@@ -181,6 +181,8 @@ export default function PortalSWS() {
               <div className="portal-card-header sws-header">
                 <span>Record Editor</span>
                 <select
+                  name="selectedUbid"
+                  autoComplete="off"
                   className="portal-ubid-select"
                   value={selectedUbid}
                   onChange={e => setSelectedUbid(e.target.value)}
@@ -190,7 +192,7 @@ export default function PortalSWS() {
               </div>
 
               {loading ? (
-                <div className="portal-loading">Loading record details...</div>
+                <div className="portal-loading">Loading record details…</div>
               ) : !record ? (
                 <div className="portal-empty">Record not found for {selectedUbid}. Please seed the database.</div>
               ) : (
@@ -210,6 +212,8 @@ export default function PortalSWS() {
                     <label>Registered Address <span className="portal-required">*</span></label>
                     <input
                       type="text"
+                      name="registered_address"
+                      autoComplete="street-address"
                       className="portal-input"
                       value={form.registered_address}
                       onChange={e => setForm(f => ({ ...f, registered_address: e.target.value }))}
@@ -222,6 +226,8 @@ export default function PortalSWS() {
                       <label>Authorized Signatory</label>
                       <input
                         type="text"
+                        name="authorized_signatory"
+                        autoComplete="name"
                         className="portal-input"
                         value={form.authorized_signatory}
                         onChange={e => setForm(f => ({ ...f, authorized_signatory: e.target.value }))}
@@ -231,6 +237,8 @@ export default function PortalSWS() {
                       <label>Primary Contact</label>
                       <input
                         type="text"
+                        name="primary_contact"
+                        autoComplete="tel"
                         className="portal-input"
                         value={form.primary_contact}
                         onChange={e => setForm(f => ({ ...f, primary_contact: e.target.value }))}
@@ -245,6 +253,8 @@ export default function PortalSWS() {
                       <label>Employee Headcount</label>
                       <input
                         type="number"
+                        name="employee_headcount"
+                        autoComplete="off"
                         className="portal-input"
                         value={form.employee_headcount}
                         onChange={e => setForm(f => ({ ...f, employee_headcount: Number(e.target.value) }))}
@@ -253,6 +263,7 @@ export default function PortalSWS() {
                     <div className="portal-field">
                       <label>Operational Status</label>
                       <select
+                        name="operational_status"
                         className="portal-input"
                         value={form.operational_status}
                         onChange={e => setForm(f => ({ ...f, operational_status: e.target.value }))}
@@ -265,6 +276,7 @@ export default function PortalSWS() {
                     <div className="portal-field">
                       <label>License Status</label>
                       <select
+                        name="license_status"
                         className="portal-input"
                         value={form.license_status}
                         onChange={e => setForm(f => ({ ...f, license_status: e.target.value }))}
