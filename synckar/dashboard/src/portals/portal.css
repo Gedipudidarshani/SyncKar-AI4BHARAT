@@ -1,25 +1,25 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Karnataka Government Portal Styles - Brutalist Technical Edition
+   Karnataka Government Portal Styles - Clean UI Edition
    ═══════════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --p-bg-primary: #000000;
-  --p-bg-card: #0a0a0a;
-  --p-border: #333333;
-  --p-border-hover: #666666;
+  --gov-primary: #003366;
+  --gov-secondary: #0b4c8c;
+  --gov-surface: #ffffff;
+  --gov-bg: #f4f6f8;
   
-  --p-text-primary: #ffffff;
-  --p-text-secondary: #aaaaaa;
+  --gov-text-main: #111827;
+  --gov-text-muted: #4b5563;
+  --gov-border: #d1d5db;
   
-  --p-sws-color: #ffffff;
-  --p-shop-color: #aaaaaa;
-  --p-factories-color: #555555;
+  --dept-sws: #005ea5;
+  --dept-shop: #00703c;
+  --dept-factories: #d4351c;
   
-  --p-font-mono: 'Fira Code', monospace;
-  --p-font-sans: 'Inter', sans-serif;
-  --p-font-display: 'Space Grotesk', sans-serif;
+  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* ─── Portal Root ─── */
@@ -27,30 +27,29 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  font-family: var(--p-font-sans);
-  background: var(--p-bg-primary);
-  color: var(--p-text-primary);
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 40px 40px;
+  font-family: var(--font-main);
+  background-color: var(--gov-bg);
+  color: var(--gov-text-main);
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ─── Header ─── */
 .portal-header {
-  background: var(--p-bg-card);
-  border-bottom: 1px solid var(--p-border);
+  background-color: var(--gov-primary);
+  color: #ffffff;
 }
 
-.portal-shop .portal-header  { border-bottom: 1px solid var(--p-shop-color); }
-.portal-factories .portal-header { border-bottom: 1px solid var(--p-factories-color); }
+.portal-sws .portal-header       { border-bottom: 4px solid var(--dept-sws); }
+.portal-shop .portal-header      { border-bottom: 4px solid var(--dept-shop); }
+.portal-factories .portal-header { border-bottom: 4px solid var(--dept-factories); }
 
 .portal-header-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 32px;
-  gap: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .portal-emblem {
@@ -62,86 +61,84 @@
 .portal-emblem-circle {
   width: 48px;
   height: 48px;
-  background: var(--p-bg-primary);
+  background-color: #ffffff;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--p-border);
-  color: var(--p-text-primary);
+  color: var(--gov-primary);
 }
 
+.portal-sws .portal-emblem-circle       { color: var(--dept-sws); }
+.portal-shop .portal-emblem-circle      { color: var(--dept-shop); }
+.portal-factories .portal-emblem-circle { color: var(--dept-factories); }
+
 .portal-gov-name {
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  color: var(--p-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 2px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.9;
 }
 
 .portal-dept-name {
-  font-family: var(--p-font-display);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  margin-top: 2px;
+  letter-spacing: -0.01em;
 }
 
 .portal-header-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 12px;
+  gap: 8px;
 }
 
 .portal-user {
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  color: var(--p-text-secondary);
-  border: 1px solid var(--p-border);
-  padding: 4px 8px;
-  text-transform: uppercase;
+  font-size: 13px;
+  opacity: 0.9;
 }
 
 .portal-nav-links {
   display: flex;
-  gap: 8px;
+  gap: 16px;
 }
 
 .portal-nav-link {
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  color: var(--p-text-secondary);
-  text-decoration: none;
-  padding: 6px 12px;
-  border: 1px solid transparent;
-  transition: all 0.2s;
-  text-transform: uppercase;
+  color: #ffffff;
+  text-decoration: underline;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .portal-nav-link:hover {
-  border: 1px solid var(--p-text-primary);
-  color: var(--p-text-primary);
+  text-decoration: none;
 }
 
 .portal-nav-link-dashboard {
-  border: 1px solid var(--p-border);
-  color: var(--p-text-primary);
+  font-weight: 700;
+  background-color: rgba(255,255,255,0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-decoration: none;
 }
 
 .portal-breadcrumb {
-  background: var(--p-bg-primary);
-  padding: 8px 32px;
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  color: var(--p-text-secondary);
-  border-bottom: 1px solid var(--p-border);
-  text-transform: uppercase;
+  background-color: #f9fafb;
+  padding: 12px 32px;
+  font-size: 14px;
+  color: var(--gov-text-muted);
+  border-bottom: 1px solid var(--gov-border);
+}
+
+.portal-breadcrumb-inner {
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 /* ─── Main Content ─── */
 .portal-main {
   flex: 1;
-  padding: 48px 32px;
+  padding: 32px;
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
@@ -149,33 +146,26 @@
 
 .portal-page-title {
   margin-bottom: 32px;
-  padding: 24px;
-  background: var(--p-bg-card);
-  border: 1px solid var(--p-border);
-  border-left: 8px solid var(--p-sws-color);
 }
 
-.portal-page-title.shop-title   { border-left-color: var(--p-shop-color); }
-.portal-page-title.factories-title { border-left-color: var(--p-factories-color); }
-
 .portal-page-title h1 {
-  font-family: var(--p-font-display);
-  font-size: 24px;
+  font-size: 32px;
   font-weight: 700;
-  text-transform: uppercase;
+  color: var(--gov-text-main);
   margin-bottom: 8px;
+  letter-spacing: -0.02em;
 }
 
 .portal-page-title p {
-  font-family: var(--p-font-mono);
-  font-size: 12px;
-  color: var(--p-text-secondary);
+  font-size: 18px;
+  color: var(--gov-text-muted);
+  max-width: 800px;
 }
 
 /* ─── Layout ─── */
 .portal-layout {
   display: grid;
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 2fr 1fr;
   gap: 32px;
   align-items: start;
 }
@@ -186,52 +176,62 @@
   }
 }
 
-.portal-sidebar { display: flex; flex-direction: column; gap: 32px; }
+.portal-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
 
 /* ─── Cards ─── */
 .portal-card {
-  background: var(--p-bg-card);
-  border: 1px solid var(--p-border);
+  background-color: var(--gov-surface);
+  border: 1px solid var(--gov-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 .portal-card-header {
   padding: 16px 24px;
-  font-family: var(--p-font-mono);
-  font-size: 12px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid var(--gov-border);
+  font-size: 18px;
   font-weight: 600;
+  color: var(--gov-text-main);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--p-border);
-  text-transform: uppercase;
-  letter-spacing: 1px;
 }
+
+.sws-header { border-top: 4px solid var(--dept-sws); }
+.shop-header { border-top: 4px solid var(--dept-shop); }
+.factories-header-card { border-top: 4px solid var(--dept-factories); }
 
 /* ─── UBID Select ─── */
 .portal-ubid-select {
   padding: 6px 12px;
-  border: 1px solid var(--p-border);
-  background: var(--p-bg-primary);
-  color: var(--p-text-primary);
-  font-family: var(--p-font-mono);
-  font-size: 10px;
+  border: 1px solid var(--gov-border);
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: var(--gov-text-main);
+  font-family: var(--font-main);
+  font-size: 14px;
   cursor: pointer;
-  text-transform: uppercase;
 }
 
 .portal-ubid-select:focus {
-  border-color: var(--p-text-primary);
-  outline: none;
+  outline: 2px solid var(--gov-secondary);
+  outline-offset: 2px;
 }
 
 /* ─── Form ─── */
 .portal-form {
-  padding: 32px;
+  padding: 24px;
 }
 
 .portal-form-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
   margin-bottom: 24px;
 }
@@ -244,283 +244,194 @@
 }
 
 .portal-field label {
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  color: var(--p-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gov-text-main);
 }
 
 .portal-required {
-  color: var(--accent-red, #ff2a2a);
+  color: #d4351c;
 }
 
 .portal-input {
-  padding: 12px 16px;
-  border: 1px solid var(--p-border);
-  background: var(--p-bg-primary);
-  color: var(--p-text-primary);
-  font-family: var(--p-font-sans);
-  font-size: 14px;
-  transition: all 0.2s;
+  padding: 12px;
+  border: 2px solid var(--gov-border);
+  border-radius: 4px;
+  font-size: 16px;
+  font-family: var(--font-main);
+  color: var(--gov-text-main);
   width: 100%;
 }
 
 .portal-input:focus {
   outline: none;
-  border-color: var(--p-text-primary);
+  border-color: var(--gov-secondary);
+  box-shadow: 0 0 0 3px rgba(11, 76, 140, 0.2);
 }
 
 .portal-input-disabled {
-  background: var(--p-bg-card);
-  color: var(--p-text-secondary);
+  background-color: #f3f4f6;
+  color: var(--gov-text-muted);
   cursor: not-allowed;
-  border-style: dashed;
-}
-
-.portal-input-compliance {
-  border-color: var(--accent-amber, #ffea00);
-  background: rgba(255, 234, 0, 0.05);
+  border-color: #e5e7eb;
 }
 
 .portal-hint {
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  color: var(--p-text-secondary);
+  font-size: 14px;
+  color: var(--gov-text-muted);
 }
 
-/* ─── Section Label ─── */
 .portal-section-label {
-  font-family: var(--p-font-display);
-  font-size: 14px;
-  color: var(--p-text-primary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  padding: 16px 0 8px;
-  border-top: 1px dashed var(--p-border);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gov-text-main);
+  margin-top: 32px;
   margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--gov-border);
 }
 
 /* ─── Form Footer ─── */
 .portal-form-footer {
+  margin-top: 32px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding-top: 24px;
-  border-top: 1px solid var(--p-border);
-  margin-top: 16px;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .portal-sync-note {
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  color: var(--p-text-secondary);
-  background: var(--p-bg-primary);
-  padding: 12px 16px;
-  border: 1px solid var(--p-border);
-  flex: 1;
-  text-transform: uppercase;
+  background-color: #e6f0f9;
+  border-left: 4px solid var(--gov-primary);
+  padding: 16px;
+  font-size: 15px;
+  color: var(--gov-text-main);
 }
+
+.shop-sync-note { background-color: #e6f3ec; border-left-color: var(--dept-shop); }
+.factories-sync-note { background-color: #fcece9; border-left-color: var(--dept-factories); }
 
 /* ─── Buttons ─── */
 .portal-btn {
   padding: 12px 24px;
-  border: 1px solid var(--p-border);
-  background: var(--p-bg-primary);
-  color: var(--p-text-primary);
-  font-family: var(--p-font-mono);
-  font-size: 12px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.2s;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
   font-weight: 600;
-  letter-spacing: 1px;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: background-color 0.15s;
+  align-self: flex-start;
+  color: #ffffff;
 }
 
 .portal-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
-  border-style: dashed;
 }
 
-.portal-btn-primary {
-  background: var(--p-text-primary);
-  color: var(--p-bg-primary);
-  border-color: var(--p-text-primary);
-}
+.portal-btn-primary { background-color: var(--dept-sws); }
+.portal-btn-primary:hover:not(:disabled) { background-color: #003c69; }
 
-.portal-btn-primary:hover:not(:disabled) {
-  background: transparent;
-  color: var(--p-text-primary);
-}
+.portal-btn-shop { background-color: var(--dept-shop); }
+.portal-btn-shop:hover:not(:disabled) { background-color: #004a27; }
 
-.portal-btn-shop {
-  background: var(--p-text-primary);
-  color: var(--p-bg-primary);
-}
-
-.portal-btn-shop:hover:not(:disabled) {
-  background: transparent;
-  color: var(--p-text-primary);
-}
-
-.portal-btn-factories {
-  background: var(--p-text-primary);
-  color: var(--p-bg-primary);
-}
-
-.portal-btn-factories:hover:not(:disabled) {
-  background: transparent;
-  color: var(--p-text-primary);
-}
+.portal-btn-factories { background-color: var(--dept-factories); }
+.portal-btn-factories:hover:not(:disabled) { background-color: #9e2715; }
 
 /* ─── Loading / Empty ─── */
-.portal-loading {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 48px;
-  color: var(--p-text-secondary);
-  font-family: var(--p-font-mono);
-  font-size: 12px;
-  text-transform: uppercase;
-}
-
-.portal-spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--p-border);
-  border-top-color: var(--p-text-primary);
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.portal-empty, .portal-empty-sm {
-  padding: 48px;
+.portal-loading, .portal-empty, .portal-empty-sm {
+  padding: 32px;
   text-align: center;
-  color: var(--p-text-secondary);
-  font-family: var(--p-font-mono);
-  font-size: 12px;
-  text-transform: uppercase;
+  color: var(--gov-text-muted);
+  font-size: 16px;
 }
 
-/* ─── Record View (Sidebar) ─── */
+/* ─── Sidebar Views ─── */
 .portal-record-view {
   padding: 24px;
 }
 
 .portal-record-row {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 12px 0;
-  border-bottom: 1px dashed var(--p-border);
-  font-family: var(--p-font-sans);
-  font-size: 13px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--gov-border);
 }
 
-.portal-record-row:last-child { border-bottom: none; }
+.portal-record-row:last-child {
+  border-bottom: none;
+}
 
 .portal-record-key {
-  color: var(--p-text-secondary);
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gov-text-muted);
 }
 
 .portal-record-val {
-  color: var(--p-text-primary);
-  text-align: right;
-  max-width: 200px;
+  font-size: 15px;
+  color: var(--gov-text-main);
 }
 
-/* ─── Activity Log ─── */
 .portal-activity {
   padding: 16px 24px;
 }
 
 .portal-activity-row {
-  display: grid;
-  grid-template-columns: 80px 100px 1fr;
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: 12px 0;
-  border-bottom: 1px dashed var(--p-border);
-  align-items: center;
+  border-bottom: 1px solid var(--gov-border);
 }
 
 .portal-activity-row:last-child { border-bottom: none; }
 
 .portal-activity-time {
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  color: var(--p-text-secondary);
-}
-
-.portal-activity-ubid {
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  color: var(--p-text-primary);
-  border: 1px solid var(--p-border);
-  padding: 2px 6px;
-  text-align: center;
+  font-size: 13px;
+  color: var(--gov-text-muted);
 }
 
 .portal-activity-fields {
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  color: var(--p-text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 14px;
+  color: var(--gov-text-main);
 }
 
-/* ─── Toast ─── */
+/* ─── Toasts ─── */
 .portal-toast {
   position: fixed;
   bottom: 32px;
   right: 32px;
   padding: 16px 24px;
-  font-family: var(--p-font-mono);
-  font-size: 12px;
+  background-color: var(--gov-surface);
+  border: 1px solid var(--gov-border);
+  border-left: 4px solid var(--gov-primary);
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   z-index: 9999;
-  border: 1px solid var(--p-border);
-  background: var(--p-bg-primary);
-  color: var(--p-text-primary);
-  box-shadow: 16px 16px 0px rgba(0,0,0,0.5);
-  animation: slideIn 0.2s cubic-bezier(0, 0, 0.2, 1);
-  text-transform: uppercase;
 }
 
-.portal-toast-success { border-left: 4px solid var(--accent-green, #00ff41); }
-.portal-toast-error { border-left: 4px solid var(--accent-red, #ff2a2a); }
+.portal-toast-success { border-left-color: #059669; }
+.portal-toast-error { border-left-color: #dc2626; }
 
 /* ─── Footer ─── */
 .portal-footer {
-  background: var(--p-bg-card);
-  border-top: 1px solid var(--p-border);
-  padding: 16px 32px;
+  background-color: #e5e7eb;
+  padding: 24px 32px;
+  font-size: 14px;
+  color: var(--gov-text-muted);
   display: flex;
   justify-content: space-between;
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  color: var(--p-text-secondary);
-  text-transform: uppercase;
+  border-top: 1px solid var(--gov-border);
 }
 
-/* ─── Portal Launcher (index page) ─── */
+/* ─── Launcher ─── */
 .portal-launcher-root {
   min-height: 100vh;
-  background: var(--p-bg-primary);
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 40px 40px;
+  background-color: var(--gov-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -538,32 +449,27 @@
 }
 
 .portal-launcher-emblem {
+  color: var(--gov-primary);
   margin-bottom: 24px;
-  color: var(--p-text-primary);
 }
 
 .portal-launcher-header h1 {
-  font-family: var(--p-font-display);
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
-  color: var(--p-text-primary);
-  text-transform: uppercase;
-  letter-spacing: 2px;
+  color: var(--gov-text-main);
   margin-bottom: 12px;
+  letter-spacing: -0.02em;
 }
 
 .portal-launcher-sub {
-  font-family: var(--p-font-mono);
-  font-size: 12px;
-  color: var(--p-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 18px;
+  color: var(--gov-text-muted);
 }
 
 .portal-launcher-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
+  gap: 24px;
   margin-bottom: 48px;
 }
 
@@ -572,95 +478,81 @@
 }
 
 .portal-launcher-card {
-  background: var(--p-bg-card);
-  border: 1px solid var(--p-border);
-  padding: 40px 32px;
-  text-decoration: none;
+  background-color: var(--gov-surface);
+  border: 1px solid var(--gov-border);
+  border-radius: 8px;
+  padding: 32px;
   text-align: center;
-  transition: all 0.2s;
+  text-decoration: none;
+  transition: box-shadow 0.2s, transform 0.2s;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  border-top: 6px solid var(--gov-primary);
 }
 
+.portal-launcher-card-sws { border-top-color: var(--dept-sws); }
+.portal-launcher-card-shop { border-top-color: var(--dept-shop); }
+.portal-launcher-card-factories { border-top-color: var(--dept-factories); }
+
 .portal-launcher-card:hover {
-  background: var(--p-bg-card);
-  border-color: var(--p-text-primary);
-  transform: translateY(-4px);
-  box-shadow: 16px 16px 0px rgba(0,0,0,0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .portal-launcher-icon {
-  color: var(--p-text-primary);
-  margin-bottom: 8px;
+  color: var(--gov-text-main);
+  margin-bottom: 16px;
 }
 
 .portal-launcher-name {
-  font-family: var(--p-font-display);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  color: var(--p-text-primary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  color: var(--gov-text-main);
+  margin-bottom: 12px;
 }
 
 .portal-launcher-desc {
-  font-family: var(--p-font-sans);
-  font-size: 13px;
-  color: var(--p-text-secondary);
+  font-size: 15px;
+  color: var(--gov-text-muted);
   line-height: 1.5;
+  margin-bottom: 24px;
 }
 
 .portal-launcher-tag {
-  font-family: var(--p-font-mono);
-  font-size: 10px;
-  padding: 6px 12px;
-  border: 1px solid var(--p-border);
-  color: var(--p-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
   margin-top: auto;
-}
-
-.portal-launcher-card:hover .portal-launcher-tag {
-  border-color: var(--p-text-primary);
-  color: var(--p-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 100px;
+  background-color: #f3f4f6;
+  color: var(--gov-text-muted);
 }
 
 .portal-synckar-note {
-  background: var(--p-bg-card);
-  border: 1px solid var(--p-border);
+  background-color: var(--gov-surface);
+  border: 1px solid var(--gov-border);
+  border-radius: 8px;
   padding: 24px;
-  text-align: center;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 24px;
 }
 
-.portal-synckar-badge {
-  background: var(--p-bg-primary);
-  border: 1px solid var(--p-text-primary);
-  color: var(--p-text-primary);
-  padding: 6px 12px;
-  font-family: var(--p-font-mono);
-  font-weight: 700;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+.portal-synckar-text {
+  font-size: 16px;
+  color: var(--gov-text-main);
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .portal-synckar-note a {
-  color: var(--p-text-primary);
+  background-color: var(--gov-primary);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 4px;
   text-decoration: none;
-  font-family: var(--p-font-mono);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.portal-synckar-note a:hover {
-  border-bottom: 1px solid var(--p-text-primary);
+  font-weight: 600;
 }

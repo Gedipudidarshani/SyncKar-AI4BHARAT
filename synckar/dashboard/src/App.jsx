@@ -87,7 +87,7 @@ function App() {
     } catch (e) { console.error('Verify failed:', e) }
   }
 
-  // Auto-refresh stats every 3s so the overview updates live during demos
+  // Auto-refresh stats
   useEffect(() => {
     fetchStats()
     fetchHealth()
@@ -104,7 +104,7 @@ function App() {
     if (page === 'dlq') fetchDlq()
   }, [page, fetchAudit, fetchConflicts, fetchDlq, searchUbid])
 
-  // Auto-refresh audit/conflicts when on those pages during demo
+  // Auto-refresh audit/conflicts when on those pages
   useEffect(() => {
     if (page !== 'audit' && page !== 'conflicts') return
     const interval = setInterval(() => {
@@ -128,10 +128,12 @@ function App() {
       <header className="header">
         <div className="header-logo">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
           </svg>
-          <h1>SyncKar</h1>
-          <span className="badge">Command Center</span>
+          <h1>SyncKar Dashboard</h1>
+          <span className="badge-version">v1.2</span>
         </div>
         <nav className="nav">
           {pages.map(p => (
@@ -144,7 +146,7 @@ function App() {
             </button>
           ))}
           <Link to="/portal" className="nav-btn-portals">
-            Portals
+            Department Portals
           </Link>
         </nav>
       </header>
@@ -180,8 +182,12 @@ function App() {
 function OverviewPage({ stats, health }) {
   return (
     <>
+      <div className="page-title">
+        <h2>System Overview</h2>
+        <p>Real-time metrics for the SyncKar Interoperability Layer</p>
+      </div>
       <div className="stats-grid">
-        <div className="stat-card blue">
+        <div className="stat-card">
           <div className="stat-label">Total Propagations</div>
           <div className="stat-value">{stats?.audit_entries ?? '—'}</div>
         </div>
@@ -197,29 +203,25 @@ function OverviewPage({ stats, health }) {
           <div className="stat-label">Outbox Pending</div>
           <div className="stat-value">{stats?.outbox_pending ?? '—'}</div>
         </div>
-        <div className="stat-card green">
-          <div className="stat-label">Conflict Records</div>
-          <div className="stat-value">{stats?.conflict_records ?? '—'}</div>
-        </div>
       </div>
 
       <div className="table-container">
         <div className="table-header">
-          <h2>System Health</h2>
-          <span className={health?.status === 'healthy' ? 'badge-success' : 'badge-error'}>
-            {health?.status ?? 'UNKNOWN'}
+          <h3>Service Health</h3>
+          <span className={`badge ${health?.status === 'healthy' ? 'badge-success' : 'badge-error'}`}>
+            {health?.status === 'healthy' ? 'Operational' : 'Degraded'}
           </span>
         </div>
         <table>
           <thead>
-            <tr><th>Service Node</th><th>Status Code</th></tr>
+            <tr><th>Service Node</th><th>Status</th></tr>
           </thead>
           <tbody>
             {health?.checks && Object.entries(health.checks).map(([svc, status]) => (
               <tr key={svc}>
-                <td style={{ textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>{svc}</td>
+                <td className="mono">{svc}</td>
                 <td>
-                  <span className={status === 'healthy' ? 'badge-success' : 'badge-error'}>
+                  <span className={`badge ${status === 'healthy' ? 'badge-success' : 'badge-error'}`}>
                     {status}
                   </span>
                 </td>
@@ -232,49 +234,16 @@ function OverviewPage({ stats, health }) {
   )
 }
 
-// ─── Mock Systems (Narrative View) ───────────────────────────────────────────
-
-const SYSTEM_LABELS = {
-  sws:       { label: 'Single Window',   icon: <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/> },
-  shop:      { label: 'Shop Est.',       icon: <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/> },
-  factories: { label: 'Factories Dept.', icon: <path d="M2 20h20M4 20V4l8 6 8-6v16"/> },
-}
-
-const EDITABLE_FIELDS = {
-  sws: [
-    { key: 'registered_address', label: 'Registered Address', type: 'text' },
-    { key: 'authorized_signatory', label: 'Authorized Signatory', type: 'text' },
-    { key: 'primary_contact', label: 'Primary Contact', type: 'text' },
-    { key: 'employee_headcount', label: 'Employee Headcount', type: 'number' },
-    { key: 'operational_status', label: 'Operational Status', type: 'select',
-      options: ['active', 'inactive', 'suspended'] },
-  ],
-  shop: [
-    { key: 'Buss_Addr_Line1', label: 'Business Address', type: 'text' },
-    { key: 'Auth_Sign_Name', label: 'Authorized Signatory', type: 'text' },
-    { key: 'Contact_Phone', label: 'Contact Phone', type: 'text' },
-    { key: 'Emp_Count', label: 'Employee Count', type: 'number' },
-    { key: 'Op_Status', label: 'Operational Status', type: 'select',
-      options: ['active', 'inactive', 'suspended'] },
-  ],
-  factories: [
-    { key: 'factory_address', label: 'Factory Address', type: 'text' },
-    { key: 'signatory_name', label: 'Signatory Name', type: 'text' },
-    { key: 'contact_number', label: 'Contact Number', type: 'text' },
-    { key: 'worker_count', label: 'Worker Count', type: 'number' },
-    { key: 'factory_status', label: 'Factory Status', type: 'select',
-      options: ['active', 'inactive', 'suspended'] },
-  ],
-}
+// ─── Mock Systems (Clean Pipeline View) ──────────────────────────────────────
 
 function MockSystemsPage() {
   const [selectedUbid, setSelectedUbid] = useState('KA-TEST-0001')
   const [records, setRecords] = useState({ sws: null, shop: null, factories: null })
-  const [loading, setLoading] = useState({})
-  const [saving, setSaving] = useState({})
+  const [saving, setSaving] = useState(false)
   const [seeding, setSeeding] = useState(false)
   const [edits, setEdits] = useState({})
   const [toast, setToast] = useState(null)
+  const [syncActive, setSyncActive] = useState(false)
   const toastTimer = useRef(null)
 
   const showToast = (msg, type = 'success') => {
@@ -283,21 +252,26 @@ function MockSystemsPage() {
     toastTimer.current = setTimeout(() => setToast(null), 4000)
   }
 
+  const triggerSyncAnimation = () => {
+    setSyncActive(true)
+    setTimeout(() => setSyncActive(false), 2000)
+  }
+
   const fetchRecord = useCallback(async (system, ubid) => {
-    setLoading(l => ({ ...l, [system]: true }))
     try {
       const res = await fetch(`${API_BASE}/api/mock/${system}/record/${ubid}`)
       if (!res.ok) throw new Error(`${res.status}`)
       const data = await res.json()
       setRecords(r => ({ ...r, [system]: data }))
-      const fields = EDITABLE_FIELDS[system] || []
-      const initial = {}
-      fields.forEach(f => { initial[f.key] = data[f.key] ?? '' })
-      setEdits(e => ({ ...e, [system]: initial }))
+      // Pre-fill edits for SWS (Source of truth)
+      if (system === 'sws') {
+        setEdits({
+          registered_address: data.registered_address || '',
+          employee_headcount: data.employee_headcount || 0,
+        })
+      }
     } catch (err) {
       setRecords(r => ({ ...r, [system]: null }))
-    } finally {
-      setLoading(l => ({ ...l, [system]: false }))
     }
   }, [])
 
@@ -313,33 +287,35 @@ function MockSystemsPage() {
     refreshAll(selectedUbid)
   }, [selectedUbid, refreshAll])
 
-  const handleEdit = (system, key, value) => {
-    setEdits(e => ({ ...e, [system]: { ...e[system], [key]: value } }))
+  const handleEdit = (key, value) => {
+    setEdits(e => ({ ...e, [key]: value }))
   }
 
-  const handleSave = async (system) => {
-    setSaving(s => ({ ...s, [system]: true }))
+  const handleSaveSWS = async () => {
+    setSaving(true)
     try {
-      const body = edits[system] || {}
-      const res = await fetch(`${API_BASE}/api/mock/${system}/record/${selectedUbid}`, {
+      const res = await fetch(`${API_BASE}/api/mock/sws/record/${selectedUbid}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(edits),
       })
       if (!res.ok) throw new Error(`${res.status}`)
-      showToast(`${SYSTEM_LABELS[system].label} Updated — SyncKar tracking event`, 'info')
-      await fetchRecord(system, selectedUbid)
+      showToast('SWS Record Updated. SyncKar is routing the changes.', 'info')
+      triggerSyncAnimation()
+      
+      // Refresh to see changes propagate
+      setTimeout(() => refreshAll(selectedUbid), 1000)
     } catch (err) {
-      showToast(`Update Failed ${SYSTEM_LABELS[system].label}: ${err.message}`, 'error')
+      showToast(`Update Failed: ${err.message}`, 'error')
     } finally {
-      setSaving(s => ({ ...s, [system]: false }))
+      setSaving(false)
     }
   }
 
   const handleConflict = async () => {
-    const swsBody = { registered_address: `${Date.now()} SWS Street, Bangalore 560001` }
-    const factBody = { factory_address: `${Date.now()} Factory Lane, Bangalore 560002` }
-    showToast('Triggering simultaneous conflict update…', 'info')
+    const swsBody = { registered_address: `Conflict Addr A - ${new Date().getTime()}` }
+    const factBody = { factory_address: `Conflict Addr B - ${new Date().getTime()}` }
+    showToast('Triggering simultaneous conflict...', 'warning')
 
     const [swsRes, factRes] = await Promise.all([
       fetch(`${API_BASE}/api/mock/sws/record/${selectedUbid}`, {
@@ -353,151 +329,27 @@ function MockSystemsPage() {
     ])
 
     if (!swsRes.ok || !factRes.ok) {
-      const code = !swsRes.ok ? swsRes.status : factRes.status
-      showToast(`Conflict trigger failed (${code})`, 'error')
+      showToast('Conflict trigger failed. Ensure DB is seeded.', 'error')
       return
     }
 
-    showToast('Conflict submitted — applying SWS_WINS resolution', 'success')
-    refreshAll(selectedUbid)
+    triggerSyncAnimation()
+    showToast('Conflict created. SWS_WINS policy applied.', 'success')
+    setTimeout(() => refreshAll(selectedUbid), 1500)
   }
 
-  const handleSeed = async () => {
+  const handleAction = async (endpoint, successMsg) => {
     setSeeding(true)
     try {
-      const res = await fetch(`${API_BASE}/api/mock/seed`, { method: 'POST' })
+      const res = await fetch(`${API_BASE}/api/mock/${endpoint}`, { method: 'POST' })
       if (!res.ok) throw new Error(`${res.status}`)
-      const data = await res.json()
-      showToast(`Data seeded (SWS:${data.seeded?.sws} SHOP:${data.seeded?.shop})`, 'success')
+      showToast(successMsg, 'success')
       refreshAll(selectedUbid)
     } catch (err) {
-      showToast(`Seed failed: ${err.message}`, 'error')
+      showToast(`Action failed: ${err.message}`, 'error')
     } finally {
       setSeeding(false)
     }
-  }
-
-  const handleReset = async () => {
-    setSeeding(true)
-    try {
-      const res = await fetch(`${API_BASE}/api/mock/reset`, { method: 'POST' })
-      if (!res.ok) throw new Error(`${res.status}`)
-      const data = await res.json()
-      showToast(`Database Reset`, 'success')
-      refreshAll(selectedUbid)
-    } catch (err) {
-      showToast(`Reset failed: ${err.message}`, 'error')
-    } finally {
-      setSeeding(false)
-    }
-  }
-
-  const handleScenarioA = async () => {
-    const body = { registered_address: `${Date.now()} Scenario-A Street, Bengaluru 560001` }
-    showToast('Scenario A: updating SWS...', 'info')
-    try {
-      const res = await fetch(`${API_BASE}/api/mock/sws/record/${selectedUbid}`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      if (!res.ok) throw new Error(`${res.status} — seed data first`)
-      showToast('Scenario A triggered — SWS updated', 'success')
-      fetchRecord('sws', selectedUbid)
-    } catch (err) {
-      showToast(`Scenario A failed: ${err.message}`, 'error')
-    }
-  }
-
-  const handleScenarioB = async () => {
-    const body = { Buss_Addr_Line1: `${Date.now()} Scenario-B Road, Bengaluru 560002` }
-    showToast('Scenario B: updating Shop...', 'info')
-    try {
-      const res = await fetch(`${API_BASE}/api/mock/shop/record/${selectedUbid}`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      if (!res.ok) throw new Error(`${res.status} — seed data first`)
-      showToast('Scenario B triggered — Shop updated', 'success')
-      fetchRecord('shop', selectedUbid)
-    } catch (err) {
-      showToast(`Scenario B failed: ${err.message}`, 'error')
-    }
-  }
-
-  const renderPanel = (system, customClass) => {
-    const { label, icon } = SYSTEM_LABELS[system]
-    const record = records[system]
-    const fields = EDITABLE_FIELDS[system] || []
-    const isLoading = loading[system]
-    const isSaving = saving[system]
-    const edit = edits[system] || {}
-
-    return (
-      <div className={`mock-panel ${customClass}`}>
-        <div className="mock-panel-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              {icon}
-            </svg>
-            <span className="mock-panel-title">{label}</span>
-          </div>
-          <span className="badge-info">{selectedUbid}</span>
-        </div>
-
-        {isLoading ? (
-          <div className="mock-loading">Loading Object...</div>
-        ) : !record ? (
-          <div className="mock-empty">No Entity</div>
-        ) : (
-          <>
-            <div className="mock-readonly">
-              <div className="mock-field-row">
-                <span className="mock-field-label">Entity Name</span>
-                <span className="mock-field-value">{record.business_name}</span>
-              </div>
-            </div>
-
-            <div className="mock-fields">
-              {fields.map(f => (
-                <div key={f.key} className="mock-field-row">
-                  <label className="mock-field-label">{f.label}</label>
-                  {f.type === 'select' ? (
-                    <select
-                      className="mock-input"
-                      value={edit[f.key] ?? ''}
-                      onChange={e => handleEdit(system, f.key, e.target.value)}
-                    >
-                      {f.options.map(o => <option key={o} value={o}>{o.toUpperCase()}</option>)}
-                    </select>
-                  ) : (
-                    <input
-                      className="mock-input"
-                      type={f.type}
-                      value={edit[f.key] ?? ''}
-                      onChange={e => handleEdit(system, f.key,
-                        f.type === 'number' ? Number(e.target.value) : e.target.value)}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div className="mock-panel-footer">
-              <span className="mock-modified animate-update" key={record.last_modified}>
-                {record.last_modified?.slice(11, 19) ?? '--:--:--'}
-              </span>
-              <button
-                className={`btn btn-primary btn-sm ${isSaving ? 'btn-saving' : ''}`}
-                onClick={() => handleSave(system)}
-                disabled={isSaving}
-              >
-                {isSaving ? 'EXECUTING' : `WRITE TO ${system.toUpperCase()}`}
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    )
   }
 
   return (
@@ -506,68 +358,147 @@ function MockSystemsPage() {
         <div className={`toast toast-${toast.type}`}>{toast.msg}</div>
       )}
 
-      <div className="mock-controls">
-        <div className="mock-controls-left">
-          <span className="mock-label">Target ID</span>
+      <div className="page-title">
+        <h2>Data Flow Demonstration</h2>
+        <p>Update the source system (SWS) and observe SyncKar propagate the changes to connected department systems.</p>
+      </div>
+
+      <div className="demo-controls-bar">
+        <div className="demo-controls-group">
+          <label className="form-label" style={{ marginBottom: 0 }}>Target Business Entity:</label>
           <select
-            className="mock-select"
+            className="input"
+            style={{ width: '300px' }}
             value={selectedUbid}
             onChange={e => setSelectedUbid(e.target.value)}
           >
             {UBID_LIST.map(u => (
-              <option key={u.ubid} value={u.ubid}>{u.ubid} | {u.name}</option>
+              <option key={u.ubid} value={u.ubid}>{u.ubid} - {u.name}</option>
             ))}
           </select>
         </div>
-        <div className="mock-controls-right">
-          <button className="btn btn-seed" onClick={handleSeed} disabled={seeding}>
-            [SEED DB]
+        <div className="demo-controls-group">
+          <button className="btn btn-outline btn-sm" onClick={() => handleAction('seed', 'Database Seeded')} disabled={seeding}>
+            Seed Database
           </button>
-          <button className="btn btn-reset" onClick={handleReset} disabled={seeding}>
-            [RESET]
+          <button className="btn btn-outline btn-sm" onClick={() => handleAction('reset', 'Database Reset')} disabled={seeding}>
+            Reset All
           </button>
-          <button className="btn btn-scenario-a" onClick={handleScenarioA}>
-            RUN A: SWS &rarr; DEPT
-          </button>
-          <button className="btn btn-scenario-b" onClick={handleScenarioB}>
-            RUN B: DEPT &rarr; SWS
-          </button>
-          <button className="btn btn-conflict" onClick={handleConflict}>
-            TRIGGER CONFLICT
+          <button className="btn btn-primary btn-sm" onClick={handleConflict}>
+            Simulate Conflict
           </button>
         </div>
-      </div>
-      
-      <div className="mock-hint-row">
-        <span className="mock-hint">Event A: SWS updates, propagates to Shop & Factories</span>
-        <span className="mock-hint">Event B: Shop updates, propagates to SWS</span>
-        <span className="mock-hint">Event C: Conflict via simultaneous edits</span>
       </div>
 
-      <div className="architecture-container">
-        {/* Source Side */}
-        <div className="architecture-side">
-          {renderPanel('sws', 'mock-panel-sws')}
+      <div className="pipeline-container">
+        {/* Source System */}
+        <div className="pipeline-node">
+          <div className="pipeline-node-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+            </svg>
+            <div>
+              <div className="pipeline-node-title">Single Window System</div>
+              <div className="pipeline-node-subtitle">Source of Truth (Write Access)</div>
+            </div>
+          </div>
+          <div className="pipeline-node-body">
+            {!records.sws ? (
+              <div className="text-muted">Entity not found. Please Seed Database.</div>
+            ) : (
+              <>
+                <div className="form-group">
+                  <label className="form-label">Registered Address</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={edits.registered_address ?? ''}
+                    onChange={e => handleEdit('registered_address', e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Employee Headcount</label>
+                  <input
+                    type="number"
+                    className="input"
+                    value={edits.employee_headcount ?? ''}
+                    onChange={e => handleEdit('employee_headcount', Number(e.target.value))}
+                  />
+                </div>
+                
+                <div className="node-footer">
+                  <span className="last-sync mono">Last Update: {records.sws.last_modified?.slice(11, 19)}</span>
+                  <button className="btn btn-primary" onClick={handleSaveSWS} disabled={saving}>
+                    {saving ? 'Saving...' : 'Update Record'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-        
-        {/* SyncKar Middle Layer Indicator */}
-        <div className="architecture-center">
-          <div>DATA BUS</div>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+
+        {/* Middleware */}
+        <div className="pipeline-middleware">
+          <svg className="middleware-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
           </svg>
-          <div style={{ marginTop: 8 }}>SYNCKAR</div>
+          <div className="middleware-title">SyncKar</div>
+          <div className="middleware-desc">Event Bus & Resolver</div>
+          <div className={`middleware-pulse ${syncActive ? 'active' : ''}`}>
+            ● SYNCING...
+          </div>
         </div>
 
-        {/* Target Side */}
-        <div className="architecture-side">
-          {renderPanel('shop', 'mock-panel-dept')}
-          {renderPanel('factories', 'mock-panel-dept')}
-        </div>
-      </div>
+        {/* Target Systems */}
+        <div className="pipeline-node">
+          <div className="pipeline-node-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <div>
+              <div className="pipeline-node-title">Department Systems</div>
+              <div className="pipeline-node-subtitle">Downstream Subscribers (Read-Only Demo)</div>
+            </div>
+          </div>
+          <div className="pipeline-node-body">
+            {!records.shop ? (
+              <div className="text-muted">Entity not found. Please Seed Database.</div>
+            ) : (
+              <>
+                <div style={{ marginBottom: '24px' }}>
+                  <div className="form-label" style={{ color: 'var(--gov-blue)' }}>Shop Establishment Dept</div>
+                  <div className="card" style={{ padding: '16px', marginBottom: '0' }}>
+                    <div className="form-group" style={{ marginBottom: '8px' }}>
+                      <span className="text-sm text-muted">Business Address:</span>
+                      <div className="mono" style={{ fontSize: '13px' }}>{records.shop.Buss_Addr_Line1}</div>
+                    </div>
+                    <div className="form-group" style={{ marginBottom: '0' }}>
+                      <span className="text-sm text-muted">Employee Count:</span>
+                      <div className="mono" style={{ fontSize: '13px' }}>{records.shop.Emp_Count}</div>
+                    </div>
+                  </div>
+                </div>
 
-      <div className="mock-tip">
-        <strong>NOTE:</strong> Monitor the <em>Audit Trail</em> or <em>Conflicts</em> tab to view raw system ledger entries generated by SyncKar after a mutation.
+                <div>
+                  <div className="form-label" style={{ color: 'var(--gov-blue)' }}>Factories Department</div>
+                  <div className="card" style={{ padding: '16px', marginBottom: '0' }}>
+                    <div className="form-group" style={{ marginBottom: '8px' }}>
+                      <span className="text-sm text-muted">Factory Address:</span>
+                      <div className="mono" style={{ fontSize: '13px' }}>{records.factories?.factory_address || '—'}</div>
+                    </div>
+                    <div className="form-group" style={{ marginBottom: '0' }}>
+                      <span className="text-sm text-muted">Worker Count:</span>
+                      <div className="mono" style={{ fontSize: '13px' }}>{records.factories?.worker_count || '—'}</div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -577,61 +508,65 @@ function MockSystemsPage() {
 
 function AuditPage({ audit, searchUbid, onSearch, onFetch }) {
   return (
-    <div className="table-container">
-      <div className="table-header">
-        <h2>Ledger ({audit.length})</h2>
-        <div style={{ display: 'flex', gap: 16 }}>
-          <input
-            className="search-input"
-            placeholder="[UBID] e.g. KA-TEST-0001"
-            value={searchUbid}
-            onChange={e => onSearch(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && onFetch()}
-          />
-          <button className="btn btn-primary" onClick={onFetch}>Query</button>
-        </div>
+    <div>
+      <div className="page-title">
+        <h2>Audit Trail</h2>
+        <p>Immutable ledger of all data propagations across systems.</p>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Target ID</th>
-            <th>Property</th>
-            <th>Vector</th>
-            <th>Payload</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {audit.map((row, i) => (
-            <tr key={i}>
-              <td style={{ fontSize: 10, fontFamily: 'var(--font-mono)' }}>
-                {row.created_at?.slice(0, 19)}
-              </td>
-              <td><span className="badge-info">{row.ubid}</span></td>
-              <td>{row.field_modified}</td>
-              <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-                {row.source_system} &rarr; {row.target_system}
-              </td>
-              <td style={{ maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-                {row.new_value?.slice(0, 40)}
-              </td>
-              <td>
-                {row.conflict_detected ? (
-                  <span className="badge-warning">{row.resolution_policy || 'CONFLICT'}</span>
-                ) : (
-                  <span className="badge-success">OK</span>
-                )}
-              </td>
+      <div className="table-container">
+        <div className="table-header">
+          <h3>Recent Events ({audit.length})</h3>
+          <div className="table-controls">
+            <input
+              className="search-input"
+              placeholder="Search by Target ID (UBID)..."
+              value={searchUbid}
+              onChange={e => onSearch(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && onFetch()}
+            />
+            <button className="btn btn-outline" onClick={onFetch}>Search</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Target ID</th>
+              <th>Property Modified</th>
+              <th>Direction</th>
+              <th>Payload Snippet</th>
+              <th>Status</th>
             </tr>
-          ))}
-          {audit.length === 0 && (
-            <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 48, fontFamily: 'var(--font-mono)' }}>
-              Awaiting Events.
-            </td></tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {audit.map((row, i) => (
+              <tr key={i}>
+                <td className="mono">{row.created_at?.slice(0, 19).replace('T', ' ')}</td>
+                <td><span className="badge badge-neutral">{row.ubid}</span></td>
+                <td>{row.field_modified}</td>
+                <td className="text-sm">
+                  {row.source_system} &rarr; {row.target_system}
+                </td>
+                <td className="mono text-sm" style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {row.new_value}
+                </td>
+                <td>
+                  {row.conflict_detected ? (
+                    <span className="badge badge-warning">{row.resolution_policy || 'CONFLICT'}</span>
+                  ) : (
+                    <span className="badge badge-success">SYNCED</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {audit.length === 0 && (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
+                No events found.
+              </td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
@@ -640,49 +575,46 @@ function AuditPage({ audit, searchUbid, onSearch, onFetch }) {
 
 function ConflictsPage({ conflicts, onRefresh }) {
   return (
-    <div className="table-container">
-      <div className="table-header">
-        <h2>Conflict Log ({conflicts.length})</h2>
-        <button className="btn btn-primary btn-sm" onClick={onRefresh}>Sync</button>
+    <div>
+      <div className="page-title">
+        <h2>Conflict Resolution Log</h2>
+        <p>Records of simultaneous edits and how SyncKar policies resolved them.</p>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Target ID</th>
-            <th>Property</th>
-            <th>Rule</th>
-            <th>Accepted Vector</th>
-            <th>Rejected Vector</th>
-            <th>Conf</th>
-          </tr>
-        </thead>
-        <tbody>
-          {conflicts.map((c, i) => (
-            <tr key={i}>
-              <td style={{ fontSize: 10, fontFamily: 'var(--font-mono)' }}>{c.created_at?.slice(0, 19)}</td>
-              <td><span className="badge-info">{c.ubid}</span></td>
-              <td>{c.field}</td>
-              <td><span className="badge-warning">{c.policy_applied}</span></td>
-              <td style={{ color: 'var(--accent-green)', fontFamily: 'var(--font-mono)', fontSize: 11 }}>{c.winning_value?.slice(0, 30)}</td>
-              <td style={{ color: 'var(--text-secondary)', textDecoration: 'line-through', fontFamily: 'var(--font-mono)', fontSize: 11 }}>{c.losing_value?.slice(0, 30)}</td>
-              <td>
-                <span className={
-                  c.temporal_confidence === 'HIGH' ? 'badge-success' :
-                  c.temporal_confidence === 'MEDIUM' ? 'badge-warning' : 'badge-error'
-                }>
-                  {c.temporal_confidence}
-                </span>
-              </td>
+      <div className="table-container">
+        <div className="table-header">
+          <h3>Resolved Conflicts ({conflicts.length})</h3>
+          <button className="btn btn-outline btn-sm" onClick={onRefresh}>Refresh Log</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Target ID</th>
+              <th>Field</th>
+              <th>Policy Applied</th>
+              <th>Accepted Value</th>
+              <th>Rejected Value</th>
             </tr>
-          ))}
-          {conflicts.length === 0 && (
-            <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 48, fontFamily: 'var(--font-mono)' }}>
-              No recorded conflicts.
-            </td></tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {conflicts.map((c, i) => (
+              <tr key={i}>
+                <td className="mono">{c.created_at?.slice(0, 19).replace('T', ' ')}</td>
+                <td><span className="badge badge-neutral">{c.ubid}</span></td>
+                <td>{c.field}</td>
+                <td><span className="badge badge-warning">{c.policy_applied}</span></td>
+                <td className="mono text-sm" style={{ color: 'var(--status-success)' }}>{c.winning_value?.slice(0, 40)}</td>
+                <td className="mono text-sm" style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>{c.losing_value?.slice(0, 40)}</td>
+              </tr>
+            ))}
+            {conflicts.length === 0 && (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
+                No conflicts recorded.
+              </td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
@@ -691,35 +623,45 @@ function ConflictsPage({ conflicts, onRefresh }) {
 
 function DLQPage({ dlq }) {
   return (
-    <div className="table-container">
-      <div className="table-header">
-        <h2>Dead Letter Queue ({dlq.length})</h2>
+    <div>
+      <div className="page-title">
+        <h2>Dead Letter Queue (DLQ)</h2>
+        <p>Messages that failed to process after maximum retries.</p>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Timestamp</th><th>Target ID</th><th>Origin</th>
-            <th>Exception</th><th>State</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {dlq.map((item, i) => (
-            <tr key={i}>
-              <td style={{ fontSize: 10, fontFamily: 'var(--font-mono)' }}>{item.created_at?.slice(0, 19)}</td>
-              <td><span className="badge-info">{item.ubid}</span></td>
-              <td>{item.source_system}</td>
-              <td style={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: 'var(--font-mono)', fontSize: 11 }}>{item.error_reason}</td>
-              <td><span className="badge-error">{item.status}</span></td>
-              <td><button className="btn btn-primary btn-sm">RETRY</button></td>
+      <div className="table-container">
+        <div className="table-header">
+          <h3>Failed Events ({dlq.length})</h3>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Target ID</th>
+              <th>Source</th>
+              <th>Error Reason</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
-          ))}
-          {dlq.length === 0 && (
-            <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 48, fontFamily: 'var(--font-mono)' }}>
-              Queue Empty.
-            </td></tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {dlq.map((item, i) => (
+              <tr key={i}>
+                <td className="mono">{item.created_at?.slice(0, 19).replace('T', ' ')}</td>
+                <td><span className="badge badge-neutral">{item.ubid}</span></td>
+                <td>{item.source_system}</td>
+                <td className="mono text-sm" style={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.error_reason}</td>
+                <td><span className="badge badge-error">{item.status}</span></td>
+                <td><button className="btn btn-outline btn-sm">Retry</button></td>
+              </tr>
+            ))}
+            {dlq.length === 0 && (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
+                DLQ is currently empty.
+              </td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
@@ -731,27 +673,34 @@ function VerifyPage({ audit, verifyResult, onVerify, onFetchAudit }) {
 
   return (
     <div>
+      <div className="page-title">
+        <h2>BSA Verification</h2>
+        <p>Cryptographically verify the integrity of SyncKar data propagations.</p>
+      </div>
       <div className="table-container">
         <div className="table-header">
-          <h2>BSA 2023 Verification</h2>
+          <h3>Recent Audit Records</h3>
         </div>
         <table>
           <thead>
             <tr>
-              <th>Trace ID</th><th>Target ID</th><th>Property</th>
-              <th>Vector</th><th>Action</th>
+              <th>Trace ID</th>
+              <th>Target ID</th>
+              <th>Property Modified</th>
+              <th>Vector</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {audit.slice(0, 10).map((row, i) => (
               <tr key={i}>
-                <td style={{ fontSize: 11, fontFamily: 'var(--font-mono)' }}>{row.audit_id?.slice(0, 8)}…</td>
-                <td><span className="badge-info">{row.ubid}</span></td>
+                <td className="mono text-sm">{row.audit_id?.slice(0, 12)}...</td>
+                <td><span className="badge badge-neutral">{row.ubid}</span></td>
                 <td>{row.field_modified}</td>
-                <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>{row.source_system} &rarr; {row.target_system}</td>
+                <td className="text-sm">{row.source_system} &rarr; {row.target_system}</td>
                 <td>
                   <button className="btn btn-primary btn-sm" onClick={() => onVerify(row.audit_id)}>
-                    VALIDATE
+                    Verify Integrity
                   </button>
                 </td>
               </tr>
@@ -762,35 +711,33 @@ function VerifyPage({ audit, verifyResult, onVerify, onFetchAudit }) {
 
       {verifyResult && (
         <div className="verify-card">
-          <h3 style={{ marginBottom: 24, fontFamily: 'var(--font-display)', textTransform: 'uppercase' }}>Integrity Check</h3>
           <div className={`verify-result ${verifyResult.signature_valid ? 'valid' : 'invalid'}`}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 16 }}>
-              {verifyResult.signature_valid ? (
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-              ) : (
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="15" y1="9" x2="9" y2="15"></line>
-                  <line x1="9" y1="9" x2="15" y2="15"></line>
-                </svg>
-              )}
-              <div>
-                <div style={{ fontSize: 20, fontFamily: 'var(--font-display)', fontWeight: 700, color: verifyResult.signature_valid ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                  {verifyResult.signature_valid ? 'SIGNATURE VALID' : 'TAMPER DETECTED'}
-                </div>
-                <div style={{ color: 'var(--text-secondary)', fontSize: 13, fontFamily: 'var(--font-mono)' }}>
-                  BSA_2023_COMPLIANT: {verifyResult.bsa_2023_compliant ? 'TRUE' : 'FALSE'}
-                </div>
+            {verifyResult.signature_valid ? (
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            ) : (
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+            )}
+            <div>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 700 }}>
+                {verifyResult.signature_valid ? 'Signature Valid' : 'Tamper Detected'}
+              </h3>
+              <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+                BSA 2023 Compliance Status: <strong>{verifyResult.bsa_2023_compliant ? 'VERIFIED' : 'FAILED'}</strong>
+              </p>
+              
+              <div className="verify-details">
+                <div><strong>Audit ID:</strong> {verifyResult.audit_id}</div>
+                <div><strong>SHA-256 Hash:</strong> {verifyResult.payload_sha256}</div>
+                <div><strong>Target Entity:</strong> {verifyResult.verification_details?.ubid}</div>
+                <div><strong>Property:</strong> {verifyResult.verification_details?.field}</div>
               </div>
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', borderTop: '1px solid var(--border)', paddingTop: 16, display: 'grid', gap: 8 }}>
-              <div>AUDIT_ID: {verifyResult.audit_id}</div>
-              <div>SHA256_HASH: {verifyResult.payload_sha256}</div>
-              <div>TARGET_ID: {verifyResult.verification_details?.ubid}</div>
-              <div>PROPERTY: {verifyResult.verification_details?.field}</div>
             </div>
           </div>
         </div>

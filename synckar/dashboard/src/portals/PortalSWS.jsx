@@ -1,6 +1,5 @@
 /**
  * Mock Karnataka Single Window System (SWS) Portal
- * Simulates the government's business registration front-end.
  */
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
@@ -59,16 +58,15 @@ export default function PortalSWS() {
       if (!res.ok) throw new Error('Update failed')
       const data = await res.json()
       const updated = data.updated_fields || []
-      showToast(`RECORD UPDATED. FIELDS: ${updated.join(', ') || 'NONE'}`, 'success')
+      showToast('Record updated successfully. Changes are syncing.', 'success')
       setActivity(a => [{
         time: new Date().toLocaleTimeString(),
         ubid: selectedUbid,
-        fields: updated.join(', ') || '—',
-        user: 'OFFICER RAMESH K.',
+        fields: updated.join(', ') || 'No changes',
       }, ...a.slice(0, 9)])
       await fetchRecord(selectedUbid)
     } catch (err) {
-      showToast(`UPDATE FAILED: ${err.message}`, 'error')
+      showToast(`Update failed: ${err.message}`, 'error')
     } finally {
       setSaving(false)
     }
@@ -76,12 +74,11 @@ export default function PortalSWS() {
 
   return (
     <div className="portal-root portal-sws">
-      {/* Government Header */}
       <header className="portal-header">
         <div className="portal-header-inner">
           <div className="portal-emblem">
             <div className="portal-emblem-circle">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
               </svg>
             </div>
@@ -91,16 +88,18 @@ export default function PortalSWS() {
             </div>
           </div>
           <div className="portal-header-right">
-            <span className="portal-user">OFFICER RAMESH K. | ADMIN</span>
+            <span className="portal-user">Officer Ramesh K.</span>
             <div className="portal-nav-links">
-              <Link to="/portal/shop" className="portal-nav-link">SHOP EST.</Link>
-              <Link to="/portal/factories" className="portal-nav-link">FACTORIES</Link>
-              <Link to="/" className="portal-nav-link portal-nav-link-dashboard">DASHBOARD</Link>
+              <Link to="/portal/shop" className="portal-nav-link">Shop Portal</Link>
+              <Link to="/portal/factories" className="portal-nav-link">Factories Portal</Link>
+              <Link to="/" className="portal-nav-link portal-nav-link-dashboard">SyncKar Dashboard</Link>
             </div>
           </div>
         </div>
         <div className="portal-breadcrumb">
-          HOME &rsaquo; BUSINESS SERVICES &rsaquo; UPDATE RECORD
+          <div className="portal-breadcrumb-inner">
+            Home &rsaquo; Business Services &rsaquo; Manage Record
+          </div>
         </div>
       </header>
 
@@ -108,16 +107,15 @@ export default function PortalSWS() {
 
       <main className="portal-main">
         <div className="portal-page-title">
-          <h1>Update Entity Record</h1>
-          <p>MUTATIONS ARE AUTOMATICALLY PROPAGATED VIA SYNCKAR EVENT BUS.</p>
+          <h1>Manage Business Record</h1>
+          <p>Update authoritative business details. Changes made here are automatically synced to other departments.</p>
         </div>
 
         <div className="portal-layout">
-          {/* Left: Form */}
           <div className="portal-form-section">
             <div className="portal-card">
               <div className="portal-card-header sws-header">
-                <span>ENTITY DETAILS &mdash; SWS</span>
+                <span>Record Editor</span>
                 <select
                   className="portal-ubid-select"
                   value={selectedUbid}
@@ -128,40 +126,36 @@ export default function PortalSWS() {
               </div>
 
               {loading ? (
-                <div className="portal-loading">
-                  <div className="portal-spinner" />
-                  FETCHING RECORD...
-                </div>
+                <div className="portal-loading">Loading record details...</div>
               ) : !record ? (
-                <div className="portal-empty">ENTITY {selectedUbid} NOT FOUND</div>
+                <div className="portal-empty">Record not found for {selectedUbid}. Please seed the database.</div>
               ) : (
                 <form onSubmit={handleSubmit} className="portal-form">
                   <div className="portal-form-row">
                     <div className="portal-field">
-                      <label>TARGET ID (UBID)</label>
+                      <label>Target ID (UBID)</label>
                       <input type="text" value={selectedUbid} disabled className="portal-input portal-input-disabled" />
                     </div>
                     <div className="portal-field">
-                      <label>ENTITY NAME</label>
+                      <label>Business Name</label>
                       <input type="text" value={record.business_name || ''} disabled className="portal-input portal-input-disabled" />
                     </div>
                   </div>
 
                   <div className="portal-field">
-                    <label>REGISTERED ADDRESS <span className="portal-required">*</span></label>
+                    <label>Registered Address <span className="portal-required">*</span></label>
                     <input
                       type="text"
                       className="portal-input"
                       value={form.registered_address}
                       onChange={e => setForm(f => ({ ...f, registered_address: e.target.value }))}
-                      placeholder="ENTER ADDRESS"
                     />
-                    <span className="portal-hint">AUTHORITATIVE DOMAIN: SWS (SWS_WINS POLICY)</span>
+                    <span className="portal-hint">Authoritative field. Will overwrite department records.</span>
                   </div>
 
                   <div className="portal-form-row">
                     <div className="portal-field">
-                      <label>AUTHORIZED SIGNATORY <span className="portal-required">*</span></label>
+                      <label>Authorized Signatory</label>
                       <input
                         type="text"
                         className="portal-input"
@@ -170,7 +164,7 @@ export default function PortalSWS() {
                       />
                     </div>
                     <div className="portal-field">
-                      <label>PRIMARY CONTACT</label>
+                      <label>Primary Contact</label>
                       <input
                         type="text"
                         className="portal-input"
@@ -180,72 +174,71 @@ export default function PortalSWS() {
                     </div>
                   </div>
 
+                  <div className="portal-section-label">Compliance & Status</div>
+
                   <div className="portal-form-row">
                     <div className="portal-field">
-                      <label>EMPLOYEES (HEADCOUNT)</label>
+                      <label>Employee Headcount</label>
                       <input
                         type="number"
                         className="portal-input"
                         value={form.employee_headcount}
                         onChange={e => setForm(f => ({ ...f, employee_headcount: Number(e.target.value) }))}
-                        min={0}
                       />
                     </div>
                     <div className="portal-field">
-                      <label>OPERATIONAL STATUS</label>
+                      <label>Operational Status</label>
                       <select
                         className="portal-input"
                         value={form.operational_status}
                         onChange={e => setForm(f => ({ ...f, operational_status: e.target.value }))}
                       >
-                        <option value="active">ACTIVE</option>
-                        <option value="inactive">INACTIVE</option>
-                        <option value="suspended">SUSPENDED</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="suspended">Suspended</option>
                       </select>
                     </div>
                     <div className="portal-field">
-                      <label>LICENSE STATUS</label>
+                      <label>License Status</label>
                       <select
                         className="portal-input"
                         value={form.license_status}
                         onChange={e => setForm(f => ({ ...f, license_status: e.target.value }))}
                       >
-                        <option value="valid">VALID</option>
-                        <option value="expired">EXPIRED</option>
-                        <option value="revoked">REVOKED</option>
+                        <option value="valid">Valid</option>
+                        <option value="expired">Expired</option>
+                        <option value="revoked">Revoked</option>
                       </select>
                     </div>
                   </div>
 
                   <div className="portal-form-footer">
-                    <div className="portal-sync-note">
-                      SYNCKAR WILL DETECT THIS MUTATION AND PROPAGATE IT TO CONNECTED SYSTEMS.
-                    </div>
                     <button type="submit" className="portal-btn portal-btn-primary" disabled={saving}>
-                      {saving ? 'EXECUTING...' : 'COMMIT UPDATE'}
+                      {saving ? 'Updating...' : 'Save Changes'}
                     </button>
+                    <div className="portal-sync-note">
+                      <strong>Note:</strong> Saving will trigger a SyncKar event. Other departments will be updated automatically.
+                    </div>
                   </div>
                 </form>
               )}
             </div>
           </div>
 
-          {/* Right: Current state + activity */}
           <div className="portal-sidebar">
             <div className="portal-card">
-              <div className="portal-card-header sws-header">CURRENT RECORD STATE</div>
+              <div className="portal-card-header sws-header">Current Data</div>
               {record && (
                 <div className="portal-record-view">
                   {[
                     ['UBID', selectedUbid],
-                    ['Entity', record.business_name],
+                    ['Business', record.business_name],
                     ['Address', record.registered_address],
                     ['Signatory', record.authorized_signatory],
                     ['Contact', record.primary_contact],
-                    ['Employees', record.employee_headcount],
+                    ['Headcount', record.employee_headcount],
                     ['Status', record.operational_status],
-                    ['License', record.license_status],
-                    ['Modified', record.last_modified?.slice(0, 19)],
+                    ['Last Updated', record.last_modified?.slice(0, 19).replace('T', ' ')],
                   ].map(([k, v]) => (
                     <div key={k} className="portal-record-row">
                       <span className="portal-record-key">{k}</span>
@@ -257,16 +250,15 @@ export default function PortalSWS() {
             </div>
 
             <div className="portal-card">
-              <div className="portal-card-header sws-header">SESSION ACTIVITY</div>
+              <div className="portal-card-header sws-header">Recent Activity</div>
               {activity.length === 0 ? (
-                <div className="portal-empty-sm">NO MUTATIONS RECORDED</div>
+                <div className="portal-empty-sm">No recent updates.</div>
               ) : (
                 <div className="portal-activity">
                   {activity.map((a, i) => (
                     <div key={i} className="portal-activity-row">
                       <span className="portal-activity-time">{a.time}</span>
-                      <span className="portal-activity-ubid">{a.ubid}</span>
-                      <span className="portal-activity-fields">{a.fields}</span>
+                      <span className="portal-activity-fields">Updated: {a.fields}</span>
                     </div>
                   ))}
                 </div>
@@ -277,8 +269,8 @@ export default function PortalSWS() {
       </main>
 
       <footer className="portal-footer">
-        <div>GOVERNMENT OF KARNATAKA — SWS TERMINAL</div>
-        <div>POWERED BY SYNCKAR INTEROPERABILITY LAYER</div>
+        <div>&copy; 2026 Government of Karnataka</div>
+        <div>Powered by SyncKar</div>
       </footer>
     </div>
   )
