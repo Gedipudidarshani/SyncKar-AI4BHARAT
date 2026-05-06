@@ -205,6 +205,15 @@ function OverviewPage({ stats, health }) {
         </div>
       </div>
 
+      <div className="card" style={{ marginBottom: '32px', backgroundColor: '#f8fafc', padding: '24px' }}>
+        <h3 style={{ marginTop: 0, color: 'var(--gov-blue)', fontSize: '18px' }}>What's happening right now?</h3>
+        <p style={{ margin: '8px 0', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
+          SyncKar has successfully processed and cryptographically signed <strong>{stats?.audit_entries || 0} events</strong>. 
+          When identical records were updated simultaneously in different systems, SyncKar detected <strong>{stats?.conflicts_detected || 0} conflicts</strong> and resolved them automatically using the predefined authoritative source rules (e.g., SWS is authoritative for demographic data). 
+          Currently, there are <strong>{stats?.outbox_pending || 0} events</strong> waiting in the Kafka stream to be processed.
+        </p>
+      </div>
+
       <div className="table-container">
         <div className="table-header">
           <h3>Service Health</h3>
@@ -219,7 +228,7 @@ function OverviewPage({ stats, health }) {
           <tbody>
             {health?.checks && Object.entries(health.checks).map(([svc, status]) => (
               <tr key={svc}>
-                <td className="mono">{svc}</td>
+                <td className="mono" style={{ textTransform: 'capitalize' }}>{svc.replace('_', ' ')}</td>
                 <td>
                   <span className={`badge ${status === 'healthy' ? 'badge-success' : 'badge-error'}`}>
                     {status}
@@ -387,9 +396,17 @@ function LiveDemoConsole({ API_BASE }) {
       </div>
 
       <div className="table-container">
-        <div className="table-header">
+        <div className="table-header" style={{ alignItems: 'center' }}>
           <h3>Live Sync Stream</h3>
-          <span className="badge badge-success">Polling...</span>
+          <div className="live-indicator">
+            <div className="live-indicator-dot"></div>
+            Live Connection Active
+          </div>
+        </div>
+        <div style={{ padding: '0 24px 16px 24px', fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', gap: '16px' }}>
+          <strong>Legend:</strong>
+          <span><span className="badge badge-success" style={{ fontSize: '10px', padding: '2px 6px' }}>SYNCED</span> : Successfully propagated to target</span>
+          <span><span className="badge badge-warning" style={{ fontSize: '10px', padding: '2px 6px' }}>SWS_WINS</span> : Conflict resolved. SWS was kept as the authoritative source</span>
         </div>
         <table>
           <thead>

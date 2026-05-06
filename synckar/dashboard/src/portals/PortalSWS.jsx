@@ -58,11 +58,17 @@ export default function PortalSWS() {
       if (!res.ok) throw new Error('Update failed')
       const data = await res.json()
       const updated = data.updated_fields || []
-      showToast('Record updated successfully. Changes are syncing.', 'success')
+      
+      if (updated.length === 0) {
+        showToast('No fields were modified. SyncKar event not triggered.', 'warning')
+      } else {
+        showToast('Record updated successfully. Changes are syncing.', 'success')
+      }
+
       setActivity(a => [{
         time: new Date().toLocaleTimeString(),
         ubid: selectedUbid,
-        fields: updated.join(', ') || 'No changes',
+        fields: updated.length > 0 ? updated.join(', ') : 'No changes',
       }, ...a.slice(0, 9)])
       await fetchRecord(selectedUbid)
     } catch (err) {
