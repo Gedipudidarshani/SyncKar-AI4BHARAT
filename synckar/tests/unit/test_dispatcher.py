@@ -72,6 +72,8 @@ def patch_dispatcher_deps():
         pipe_mock = mock.Mock()
         pipe_mock.execute.return_value = [0, 1, 1, True]  # zcard = 1 → under limit
         redis_mock.pipeline.return_value = pipe_mock
+        # Hard-reset key is absent by default — stale-event guard is a no-op
+        redis_mock.get.return_value = None
         mock_get_redis.return_value = redis_mock
 
         # Idempotency: RESERVED by default (proceed)
@@ -470,3 +472,110 @@ def test_circuit_breaker_open_does_not_call_api_and_records_error(patch_dispatch
 
     # API must NOT have been called
     shop_client.update_record.assert_not_called()
+
+
+# ─── Tests: Stale event drop ──────────────────────────────────────────────────
+
+def test_stale_event_is_dropped_sws_to_departments(patch_dispatcher_deps):
+    """Events generated before a hard reset are silently dropped."""
+    from synckar.pipeline.dispatcher import dispatch_sws_to_departments
+
+    # Simulate redis returning a future timestamp so event.received_at < reset_ts
+    from datetime import datetime, timedelta, timezone
+
+    future_ts = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+    patch_dispatcher_deps["redis"].get.return_value = future_ts
+
+    event = _make_event()
+    result = dispatch_sws_to_departments(event)
+
+    assert result == {"status": "dropped", "reason": "hard_reset"}
+
+
+def test_stale_event_is_dropped_department_to_sws(patch_dispatcher_deps):
+    """Same stale-event guard applies to the dept-to-SWS direction."""
+    from synckar.pipeline.dispatcher import dispatch_department_to_sws
+    from datetime import datetime, timedelta, timezone
+
+    future_ts = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+    patch_dispatcher_deps["redis"].get.return_value = future_ts
+
+    event = _make_event(source_system=SourceSystem.FACTORIES)
+    result = dispatch_department_to_sws(event)
+
+    assert result == {"status": "dropped", "reason": "hard_reset"}
+
+
+# ─── Tests: DLQ conflict routing ──────────────────────────────────────────────
+
+def test_conflict_dlq_routing_returns_dlq_status(patch_dispatcher_deps):
+    """Unmapped / unknown fields with conflict must be routed to DLQ."""
+    from synckar.pipeline.dispatcher import dispatch_sws_to_departments
+    from synckar.pipeline.conflict import ConflictWindowEntry, ResolutionPolicy
+    from synckar.models.audit import ConflictAuditRecord
+    from uuid import uuid4
+
+    existing = ConflictWindowEntry(
+        source_system="shop_establishment",
+        broker_sequence=10,
+        correlation_id=str(uuid4()),
+        value="some value",
+    )
+    patch_dispatcher_deps["conflict"].check_and_register.return_value = existing
+
+    conflict_record = ConflictAuditRecord(
+        correlation_id=uuid4(),
+        ubid="KA-TEST-0001",
+        field="unknown_field",
+        source_a_system="shop_establishment",
+        source_a_value="some value",
+        source_b_system="sws",
+        source_b_value="New Address",
+        policy_applied=ResolutionPolicy.DLQ.value,
+        winning_value="",
+        losing_value="",
+        temporal_confidence="LOW",
+    )
+
+    with (
+        mock.patch("synckar.pipeline.dispatcher.resolve_conflict", return_value=conflict_record),
+        mock.patch("synckar.pipeline.dispatcher._get_shop_client"),
+        mock.patch("synckar.pipeline.dispatcher._get_factories_client"),
+    ):
+        event = _make_event(field_name="unknown_field")
+        results = dispatch_sws_to_departments(event)
+
+    assert results["shop_establishment"]["status"] == "DLQ"
+
+
+# ─── Tests: PermanentWriteError propagation ───────────────────────────────────
+
+def test_permanent_write_error_does_not_trigger_retry(patch_dispatcher_deps):
+    """PermanentWriteError (4xx) must not be collected as a retriable error."""
+    from synckar.pipeline.dispatcher import dispatch_sws_to_departments
+    from synckar.exceptions import PermanentWriteError
+
+    with (
+        mock.patch("synckar.pipeline.dispatcher._get_shop_client") as mock_shop,
+        mock.patch("synckar.pipeline.dispatcher._get_factories_client") as mock_fact,
+        mock.patch("synckar.pipeline.dispatcher.shop_translate_outbound") as mock_tx,
+        mock.patch("synckar.pipeline.dispatcher.factories_translate_outbound") as mock_fact_tx,
+    ):
+        mock_tx.return_value = {"Buss_Addr_Line1": "New Address"}
+        shop_client = mock.Mock()
+        shop_client.update_record.side_effect = PermanentWriteError(
+            "400 Bad Request", status_code=400, system_id="shop_establishment", ubid="KA-TEST-0001"
+        )
+        mock_shop.return_value = shop_client
+
+        # Factories succeeds
+        mock_fact_tx.return_value = {"factory_address": "New Address"}
+        fact_client = mock.Mock()
+        fact_client.update_record.return_value = {"updated_fields": ["factory_address"]}
+        mock_fact.return_value = fact_client
+
+        event = _make_event()
+        # PermanentWriteError propagates out of _propagate_to_adapter but is
+        # NOT added to retriable_errors, so it surfaces as a generic exception.
+        with pytest.raises(PermanentWriteError):
+            dispatch_sws_to_departments(event)

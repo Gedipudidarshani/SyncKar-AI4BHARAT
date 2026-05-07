@@ -44,3 +44,10 @@ desktop.ini
 # ─── Logs ───
 *.log
 logs/
+
+# ─── Coverage ───
+.coverage
+coverage.json
+coverage.xml
+htmlcov/
+.pytest_cache/
