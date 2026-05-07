@@ -25,27 +25,68 @@ SyncKar sits **between** SWS and department systems as an interoperability layer
 - **Circuit breakers** — per-adapter resilience with automatic recovery
 - **Schema translation** — versioned YAML mappings with human certification
 
-## Quick Start (Local)
+## Local Development Guide (Windows & Linux)
+
+SyncKar is an event-driven system that relies heavily on complex infrastructure: **PostgreSQL**, **Redis**, and **Redpanda (Kafka)**. Setting these up natively is extremely difficult. **The proper and official way to run this locally is through Docker Compose.**
+
+### Step 1: Install Prerequisites
+- **Windows / Mac**: Install [Docker Desktop](https://docs.docker.com/desktop/) and ensure it is running.
+- **Linux**: Install `docker` and the `docker-compose-plugin`. 
+  ```bash
+  sudo apt-get update
+  sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+  ```
+
+### Step 2: Start the Full Backend Stack
+Once Docker is running, spin up the entire infrastructure (Kafka, Postgres, Redis, Mock Systems, and the Python FastAPI backend) with a single command.
 
 ```bash
-# 1. Clone and setup
+# 1. Enter the project directory
 cd synckar
-cp .env.example .env
 
-# 2. Generate RSA keys for audit signing
+# 2. Copy the example environment variables
+cp .env.example .env     # (On Windows PowerShell use: Copy-Item .env.example .env)
+
+# 3. Generate the RSA keys needed for the Audit Ledger
 python scripts/generate_rsa_keys.py
 
-# 3. Start all services (Postgres, Redis, Redpanda, mock systems, API)
-docker compose up --build
-
-# 4. Seed test data
-python scripts/seed_data.py
-
-# 5. Run demo scenarios
-python scripts/demo_scenario_a.py   # SWS → Departments
-python scripts/demo_scenario_b.py   # Department → SWS  
-python scripts/demo_scenario_c.py   # Conflict resolution
+# 4. Build and start the entire stack in the background
+docker compose up --build -d
 ```
+*Note: The first time you run this, it will take a few minutes to download the Postgres, Redis, and Redpanda images.*
+
+### Step 3: Seed the Local Database
+Now that the database is running inside Docker, populate it with the mock Karnataka businesses:
+```bash
+docker compose exec synckar-api python scripts/run_migrations.py
+docker compose exec synckar-api python scripts/seed_data.py
+```
+
+### Step 4: Access the Dashboard (Two Options)
+
+#### Option A: Standard Viewing (No hot-reload)
+The `docker compose` command automatically builds the React frontend and serves it directly from the Python backend! You can immediately view it by going to:
+👉 **http://localhost:18080/dashboard**
+
+#### Option B: Active UI Development (With React Hot-Reload)
+If you want to actively edit the UI code (`dashboard/src/App.jsx`) and see changes instantly without rebuilding the Docker container:
+
+1. Keep the Docker backend running (`docker compose up -d`).
+2. Open a new terminal and navigate to the `dashboard` directory:
+   ```bash
+   cd dashboard
+   ```
+3. Tell the React app where the local Docker backend is running by creating a `.env.local` file:
+   ```bash
+   echo "VITE_API_URL=http://localhost:18080" > .env.local
+   # (On Windows PowerShell use: "VITE_API_URL=http://localhost:18080" | Out-File -Encoding ASCII .env.local)
+   ```
+4. Install dependencies and start the Vite development server:
+   ```bash
+   npm install
+   npm run dev
+   ```
+5. Open the localhost URL that Vite provides (usually **http://localhost:5173**).
 
 ## Architecture
 
