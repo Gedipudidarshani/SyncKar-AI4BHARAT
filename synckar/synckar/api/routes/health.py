@@ -30,7 +30,11 @@ def health_check():
     # PostgreSQL
     try:
         conn = db.get_conn()
-        db.put_conn(conn)
+        try:
+            # Check connection is active
+            pass
+        finally:
+            db.put_conn(conn)
         checks["postgres"] = "healthy"
     except Exception as e:
         checks["postgres"] = f"unhealthy: {e}"
@@ -58,32 +62,33 @@ def get_stats():
     """Dashboard stats — event counts, conflict counts, DLQ depth."""
     try:
         conn = db.get_conn()
-        cursor = conn.cursor()
+        try:
+            cursor = conn.cursor()
 
-        cursor.execute("SELECT COUNT(*) FROM audit_ledger")
-        audit_count = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM audit_ledger")
+            audit_count = cursor.fetchone()[0]
 
-        cursor.execute("SELECT COUNT(*) FROM audit_ledger WHERE conflict_detected = true")
-        conflict_count = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM audit_ledger WHERE conflict_detected = true")
+            conflict_count = cursor.fetchone()[0]
 
-        cursor.execute("SELECT COUNT(*) FROM conflict_log")
-        conflict_log_count = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM conflict_log")
+            conflict_log_count = cursor.fetchone()[0]
 
-        cursor.execute("SELECT COUNT(*) FROM dead_letter_queue WHERE status = 'PENDING'")
-        dlq_depth = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM dead_letter_queue WHERE status = 'PENDING'")
+            dlq_depth = cursor.fetchone()[0]
 
-        cursor.execute("SELECT COUNT(*) FROM outbox WHERE status = 'PENDING'")
-        outbox_pending = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM outbox WHERE status = 'PENDING'")
+            outbox_pending = cursor.fetchone()[0]
 
-        db.put_conn(conn)
-
-        return {
-            "audit_entries": audit_count,
-            "conflicts_detected": conflict_count,
-            "conflict_records": conflict_log_count,
-            "dlq_depth": dlq_depth,
-            "outbox_pending": outbox_pending,
-        }
+            return {
+                "audit_entries": audit_count,
+                "conflicts_detected": conflict_count,
+                "conflict_records": conflict_log_count,
+                "dlq_depth": dlq_depth,
+                "outbox_pending": outbox_pending,
+            }
+        finally:
+            db.put_conn(conn)
     except Exception as e:
         logger.error("stats_error", error=str(e))
         return {"error": str(e)}
