@@ -30,38 +30,8 @@ By deploying SyncKar, the state can eliminate an estimated 4M to 8M redundant fo
 ## Architecture Walkthrough
 
 SyncKar operates as a central event bus using Apache Kafka. Changes in either SWS or a department system are captured, translated into a canonical schema, and propagated to target systems.
-
-```mermaid
-flowchart TD
-    subgraph State_Infrastructure[State Infrastructure]
-        SWS[Karnataka SWS Unmodified]
-        Depts[40+ Department Systems Unmodified]
-    end
-
-    subgraph SyncKar_Layer[SyncKar Interoperability Layer]
-        SWS_Adapter[SWS Adapter]
-        Kafka[Kafka Event Bus]
-        Dept_Adapters[Department Adapters]
-        
-        Redis[(Idempotency Engine Redis)]
-        Postgres[(Audit Ledger PostgreSQL)]
-        
-        Conflict[Conflict Resolution Matrix]
-        Schema[Schema Registry]
-    end
-    
-    SWS <-->|Webhooks and API| SWS_Adapter
-    SWS_Adapter <--> Kafka
-    Kafka <--> Dept_Adapters
-    Dept_Adapters <-->|REST, SOAP, Polling| Depts
-    
-    SWS_Adapter --> Redis
-    Dept_Adapters --> Redis
-    
-    Kafka --> Postgres
-    Kafka --> Conflict
-    Dept_Adapters --> Schema
-```
+<img width="1600" height="833" alt="synckar arch" src="https://github.com/user-attachments/assets/dc3be81c-caba-4e51-975c-53baa8c03bb6" />
+<img width="1258" height="868" alt="synckar aws arch" src="https://github.com/user-attachments/assets/53925844-6334-4089-b3ba-946952c08e15" />
 
 ### 1. Ingress and Egress
 Changes are detected either via real time webhooks for modern systems like SWS or via stateful polling and cryptographic snapshot diffing for legacy systems without event capabilities.
