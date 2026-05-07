@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyncKar 3D Flow Architecture</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #020617;
+            --bg-panel: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-light: rgba(255, 255, 255, 0.1);
+
+            --sws-color: #3b82f6;
+            --sws-dark: #1e3a8a;
+            --sws-glow: rgba(59, 130, 246, 0.5);
+
+            --dept-color: #10b981;
+            --dept-dark: #064e3b;
+            --dept-glow: rgba(16, 185, 129, 0.5);
+
+            --kafka-color: #f59e0b;
+            --kafka-dark: #78350f;
+            --kafka-glow: rgba(245, 158, 11, 0.5);
+
+            --redis-color: #f43f5e;
+            --redis-dark: #881337;
+            --redis-glow: rgba(244, 63, 94, 0.5);
+
+            --pg-color: #0ea5e9;
+            --pg-dark: #0c4a6e;
+            --pg-glow: rgba(14, 165, 233, 0.5);
+
+            --core-color: #06b6d4;
+            --core-dark: #164e63;
+            --core-glow: rgba(6, 182, 212, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #1e293b, var(--bg-base) 90%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 2rem 1rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(to right, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5rem 2rem;
+        }
+
+        .svg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .path-line {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.15);
+            stroke-width: 2.5;
+            stroke-dasharray: 8 8;
+            transition: stroke 0.3s, filter 0.3s;
+        }
+
+        .path-line.active {
+            stroke: rgba(255, 255, 255, 0.8);
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
+            animation: dashFlow 20s linear infinite;
+        }
+
+        .path-hidden {
+            fill: none;
+            stroke: none;
+        }
+
+        @keyframes dashFlow {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }
+
+        .packet {
+            fill: #fff;
+            opacity: 0;
+        }
+
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 230px);
+            grid-template-rows: auto auto auto;
+            gap: 4.5rem 3.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .middleware-bg {
+            position: absolute;
+            grid-column: 2 / 5;
+            grid-row: 1 / 4;
+            top: -3.5rem;
+            bottom: -3.5rem;
+            left: -2.5rem;
+            right: -2.5rem;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 32px;
+            border: 1.5px dashed rgba(6, 182, 212, 0.3);
+            box-shadow: 0 0 80px rgba(0, 0, 0, 0.4), inset 0 0 40px rgba(6, 182, 212, 0.05);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .middleware-bg::before {
+            content: 'SYNCKAR MIDDLEWARE LAYER';
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-panel);
+            padding: 0.25rem 1.5rem;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            color: var(--core-color);
+            font-weight: 700;
+            border-radius: 20px;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+        }
+
+        /* 3D Node Design */
+        .node {
+            width: 100%;
+            min-height: 125px;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            cursor: default;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+            box-shadow:
+                0 1px 1px rgba(255, 255, 255, 0.05) inset,
+                0 6px 0 var(--node-dark),
+                0 10px 20px rgba(0, 0, 0, 0.4);
+            transform: translateY(0);
+        }
+
+        .node.active {
+            transform: translateY(-8px);
+            background: linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 1));
+            box-shadow:
+                0 1px 1px rgba(255, 255, 255, 0.2) inset,
+                0 14px 0 var(--node-dark),
+                0 25px 40px var(--node-glow);
+            border-color: var(--node-color);
+        }
+
+        /* Node Specifics */
+        .node.sws {
+            --node-color: var(--sws-color);
+            --node-dark: var(--sws-dark);
+            --node-glow: var(--sws-glow);
+        }
+
+        .node.dept {
+            --node-color: var(--dept-color);
+            --node-dark: var(--dept-dark);
+            --node-glow: var(--dept-glow);
+        }
+
+        .node.kafka {
+            --node-color: var(--kafka-color);
+            --node-dark: var(--kafka-dark);
+            --node-glow: var(--kafka-glow);
+        }
+
+        .node.redis {
+            --node-color: var(--redis-color);
+            --node-dark: var(--redis-dark);
+            --node-glow: var(--redis-glow);
+        }
+
+        .node.pg {
+            --node-color: var(--pg-color);
+            --node-dark: var(--pg-dark);
+            --node-glow: var(--pg-glow);
+        }
+
+        .node.core {
+            --node-color: var(--core-color);
+            --node-dark: var(--core-dark);
+            --node-glow: var(--core-glow);
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .icon-box {
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--node-color);
+            box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.05);
+        }
+
+        .icon-box svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .node-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .node-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'Fira Code', monospace;
+            margin-top: 0.35rem;
+        }
+
+        .node-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 0.65rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+            font-family: 'Fira Code', monospace;
+            letter-spacing: 0.05em;
+        }
+
+        /* Controls & Narrative Panel */
+        .controls-panel {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-light);
+            padding: 2.5rem 3rem;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 4rem;
+            position: relative;
+            z-index: 20;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .scenario-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .btn {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            padding: 1.25rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-align: left;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            background: #334155;
+            transform: translateX(5px);
+            border-color: #475569;
+        }
+
+        .btn.playing {
+            border-color: #34d399;
+            background: rgba(52, 211, 153, 0.1);
+            color: #34d399;
+            box-shadow: 0 4px 15px rgba(52, 211, 153, 0.2);
+        }
+
+        .btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .narrative-box {
+            background: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 16px;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .narrative-step {
+            font-size: 0.9rem;
+            color: var(--node-color);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: color 0.3s;
+        }
+
+        .narrative-text {
+            font-size: 1.35rem;
+            line-height: 1.6;
+            color: #f8fafc;
+        }
+
+        .narrative-text span.highlight {
+            color: #38bdf8;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>SyncKar Architecture Flow</h1>
+    </header>
+
+    <div class="main-container" id="main-container">
+        <svg class="svg-layer" id="svg-layer"></svg>
+
+        <div class="architecture-grid">
+            <div class="middleware-bg"></div>
+
+            <!-- ROW 1 -->
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell">
+                <div class="node redis" id="redis">
+                    <div class="node-header">
+                        <div class="icon-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                                <polyline points="2 17 12 22 22 17"></polyline>
+                                <polyline points="2 12 12 17 22 12"></polyline>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="node-title">Redis Engine</div>
+                            <div class="node-sub">Idempotency</div>
+                        </div>
+                    </div>
+                    <div class="node-tags">
+                        <span class="tag">Two-Phase</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cell"></div>
+            <div class="cell">
+                <div class="node dept" id="sys-shop">
+                    <div class="node-header">
+                        <div class="icon-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="node-title">Shop Est.</div>
+                            <div class="node-sub">Legacy System</div>
+                        </div>
+                    </div>
+                    <div class="node-tags">
+                        <span class="tag">SOAP/XML</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="cell">
+                <div class="node sws" id="sys-sws">
+                    <div class="node-header">
+                        <div class="icon-box">
+                            <svg viewBox="-11.5 -10.23174 23 20.46348">
+                                <circle cx="0" cy="0" r="2.05" fill="currentColor" />
+                                <g stroke="currentColor" stroke-width="1" fill="none">
+                                    <ellipse rx="11" ry="4.2" />
+                                    <ellipse rx="11" ry="4.2" transform="rotate(60)" />
+                                    <ellipse rx="11" ry="4.2" transform="rotate(120)" />
+                                </g>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="node-title">Karnataka SWS</div>
+                            <div class="node-sub">Source Portal</div>
+                        </div>
+                    </div>
+                    <div class="node-tags">
+                        <span class="tag">React</span>
+                        <span class="tag">Webhooks</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cell">
+                <div class="node core" id="sws-adapter">
+                    <div class="node-header">
+                        <div class="icon-box">
+                            <svg viewBox="0 0 118 118" fill="currentColor">
+                                <path
+                                    d="M58.8.7C46.1.7 44.8 6 44.8 6l.1 12.3h28.1v3.9H44.1C30.4 22.2 26 29 26 44v14h11.9v-7.3c0-7.8 6.4-14 14.3-14h19v-21c0-10.4-8.7-15-22.4-15zM48 9.9c2.5 0 4.5 2 4.5 4.5S50.5 19 48 19s-4.5-2-4.5-4.5 2-4.5 4.5-4.5zm43.9 22.2v21c0 10.4 8.7 15 22.4 15 12.7 0 14-5.3 14-5.3l-.1-12.3H100v-3.9h28.9c13.7 0 18.1-6.8 18.1-21.8v-14H135v7.3c0 7.8-6.4 14-14.3 14H102v21zM114.3 108.3c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z"
+                                    transform="translate(-18 -0.7)" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="node-title">SWS Adapter</div>
+                            <div class="node-sub">Ingress / Egress</div>
+                        </div>
+                    </div>
+                    <div class="node-tags">
+                        <span class="tag">FastAPI</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cell">
+                <div class="node kafka" id="kafka">
+                    <div class="node-header">
+                        <div class="icon-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="node-title">Event Broker</div>
+                            <div class="node-sub">Apache Kafka</div>
+                        </div>
+                    </div>
+                    <div class="node-tags">
+                        <span class="tag">Partitioned Log</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cell">
+                <div class="node core" id="dept-adapter">
+                    <div class="node-header">
+                        <div class="icon-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path
+                                    d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+                                </path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="node-title">Dept Adapters</div>
+                            <div class="node-sub">Translation & Conflict</div>
+                        </div>
+                    </div>
+                    <div class="node-tags">
+                        <span class="tag">FastAPI</span>
+                        <span class="tag">Polling</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cell"></div>
+
+            <!-- ROW 3 -->
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell">
+                <div class="node pg" id="postgres">
+                    <div class="node-header">
+                        <div class="icon-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="node-title">PostgreSQL</div>
+                            <div class="node-sub">Audit Ledger</div>
+                        </div>
+                    </div>
+                    <div class="node-tags">
+                        <span class="tag">BSA Compliant</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cell"></div>
+            <div class="cell">
+                <div class="node dept" id="sys-factories">
+                    <div class="node-header">
+                        <div class="icon-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="node-title">Factories Dept</div>
+                            <div class="node-sub">Legacy System</div>
+                        </div>
+                    </div>
+                    <div class="node-tags">
+                        <span class="tag">REST API</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-panel">
+        <div class="scenario-btns">
+            <button class="btn" id="btn-a" onclick="playScenario('A')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                </svg>
+                Scenario A: SWS to Depts
+            </button>
+            <button class="btn" id="btn-b" onclick="playScenario('B')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                </svg>
+                Scenario B: Dept to SWS
+            </button>
+            <button class="btn" id="btn-c" onclick="playScenario('C')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                </svg>
+                Scenario C: Conflict Handling
+            </button>
+        </div>
+        <div class="narrative-box">
+            <div class="narrative-step" id="n-step">Ready</div>
+            <div class="narrative-text" id="n-text">Select a scenario on the left to see the SyncKar architecture in
+                action.</div>
+        </div>
+    </div>
+
+    <script>
+        const connections = [
+            { id: 'path-sws-adapter', from: 'sys-sws', to: 'sws-adapter', visible: true },
+            { id: 'path-adapter-sws', from: 'sws-adapter', to: 'sys-sws', visible: false },
+            { id: 'path-adapter-kafka', from: 'sws-adapter', to: 'kafka', visible: true },
+            { id: 'path-kafka-adapter', from: 'kafka', to: 'sws-adapter', visible: false },
+            { id: 'path-dept-kafka', from: 'dept-adapter', to: 'kafka', visible: true },
+            { id: 'path-kafka-dept', from: 'kafka', to: 'dept-adapter', visible: false },
+            { id: 'path-kafka-redis', from: 'kafka', to: 'redis', visible: true },
+            { id: 'path-redis-kafka', from: 'redis', to: 'kafka', visible: false },
+            { id: 'path-kafka-pg', from: 'kafka', to: 'postgres', visible: true },
+            { id: 'path-adapter-shop', from: 'dept-adapter', to: 'sys-shop', visible: true },
+            { id: 'path-shop-adapter', from: 'sys-shop', to: 'dept-adapter', visible: false },
+            { id: 'path-adapter-fac', from: 'dept-adapter', to: 'sys-factories', visible: true },
+            { id: 'path-fac-adapter', from: 'sys-factories', to: 'dept-adapter', visible: false },
+        ];
+
+        function drawLines() {
+            const svg = document.getElementById('svg-layer');
+            svg.innerHTML = '';
+
+            const svgRect = svg.getBoundingClientRect();
+
+            connections.forEach(conn => {
+                const fromEl = document.getElementById(conn.from);
+                const toEl = document.getElementById(conn.to);
+                if (!fromEl || !toEl) return;
+
+                const fromRect = fromEl.getBoundingClientRect();
+                const toRect = toEl.getBoundingClientRect();
+
+                const startX = fromRect.left - svgRect.left + fromRect.width / 2;
+                const startY = fromRect.top - svgRect.top + fromRect.height / 2;
+                const endX = toRect.left - svgRect.left + toRect.width / 2;
+                const endY = toRect.top - svgRect.top + toRect.height / 2;
+
+                const dx = endX - startX;
+                const dy = endY - startY;
+
+                let pathData;
+                if (Math.abs(dy) > Math.abs(dx)) {
+                    const curve = dy / 2.5; // smoother curve factor
+                    pathData = `M ${startX} ${startY} C ${startX} ${startY + curve}, ${endX} ${endY - curve}, ${endX} ${endY}`;
+                } else {
+                    const curve = dx / 2.5; // smoother curve factor
+                    pathData = `M ${startX} ${startY} C ${startX + curve} ${startY}, ${endX - curve} ${endY}, ${endX} ${endY}`;
+                }
+
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute('d', pathData);
+                path.setAttribute('id', conn.id);
+                path.setAttribute('class', conn.visible ? 'path-line' : 'path-hidden');
+                svg.appendChild(path);
+
+                const packet = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                packet.setAttribute('r', '6');
+                packet.setAttribute('id', `packet-${conn.id}`);
+                packet.setAttribute('class', 'packet');
+
+                const animateMotion = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
+                animateMotion.setAttribute('id', `motion-${conn.id}`);
+                animateMotion.setAttribute('dur', '1.5s');
+                animateMotion.setAttribute('repeatCount', '1');
+                animateMotion.setAttribute('fill', 'freeze');
+                animateMotion.setAttribute('path', pathData);
+                animateMotion.setAttribute('begin', 'indefinite');
+
+                const animateOpacity = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+                animateOpacity.setAttribute('id', `opacity-${conn.id}`);
+                animateOpacity.setAttribute('attributeName', 'opacity');
+                animateOpacity.setAttribute('values', '0;1;1;0');
+                animateOpacity.setAttribute('keyTimes', '0;0.1;0.9;1');
+                animateOpacity.setAttribute('dur', '1.5s');
+                animateOpacity.setAttribute('fill', 'freeze');
+                animateOpacity.setAttribute('begin', `motion-${conn.id}.begin`);
+
+                packet.appendChild(animateMotion);
+                packet.appendChild(animateOpacity);
+                svg.appendChild(packet);
+            });
+        }
+
+        window.addEventListener('resize', drawLines);
+        window.addEventListener('load', () => setTimeout(drawLines, 100));
+
+        const colorMap = {
+            'sws': '#3b82f6',
+            'dept': '#10b981',
+            'core': '#06b6d4',
+            'kafka': '#f59e0b',
+            'redis': '#f43f5e',
+            'pg': '#0ea5e9'
+        };
+
+        const scenarios = {
+            A: [
+                { title: "Step 1: Event Generation", text: "Business updates Address in <span>SWS Portal</span>.", nodes: ['sys-sws'], paths: [] },
+                { title: "Step 2: Ingress & Translation", text: "<span>SWS Adapter</span> captures event, translates to Canonical JSON.", nodes: ['sys-sws', 'sws-adapter'], paths: ['path-sws-adapter'] },
+                { title: "Step 3: Event Broker", text: "Event published to <span>Kafka</span> partitioned by UBID.", nodes: ['sws-adapter', 'kafka'], paths: ['path-adapter-kafka'] },
+                { title: "Step 4: Idempotency Check", text: "Adapter checks <span>Redis</span>: Key reserved as IN_PROGRESS to prevent duplicates.", nodes: ['kafka', 'redis'], paths: ['path-kafka-redis'] },
+                { title: "Step 5: Egress & Translation", text: "<span>Dept Adapters</span> consume event, translate to SOAP/REST.", nodes: ['kafka', 'dept-adapter'], paths: ['path-kafka-dept'] },
+                { title: "Step 6: Target Update & Audit", text: "Legacy systems updated. Action hashed and saved to <span>Postgres Audit Ledger</span>.", nodes: ['dept-adapter', 'sys-shop', 'sys-factories', 'postgres'], paths: ['path-adapter-shop', 'path-adapter-fac', 'path-kafka-pg'] }
+            ],
+            B: [
+                { title: "Step 1: Legacy Update", text: "Signatory changed directly in <span>Factories Dept</span> database.", nodes: ['sys-factories'], paths: [] },
+                { title: "Step 2: Change Detection", text: "<span>Dept Adapter</span> statefully polls API and detects diff via MurmurHash3.", nodes: ['sys-factories', 'dept-adapter'], paths: ['path-fac-adapter'] },
+                { title: "Step 3: Event Broker", text: "Canonical event published back to <span>Kafka</span>.", nodes: ['dept-adapter', 'kafka'], paths: ['path-dept-kafka'] },
+                { title: "Step 4: Idempotency Check", text: "Event validated against <span>Redis</span> idempotency keys.", nodes: ['kafka', 'redis'], paths: ['path-kafka-redis'] },
+                { title: "Step 5: Propagation", text: "<span>SWS Adapter</span> consumes event. Target updated, Audit Ledger appended in <span>Postgres</span>.", nodes: ['kafka', 'sws-adapter', 'postgres', 'sys-sws'], paths: ['path-kafka-adapter', 'path-adapter-sws', 'path-kafka-pg'] }
+            ],
+            C: [
+                { title: "Step 1: Simultaneous Collision", text: "SWS and Shop Est update 'Address' within 5 minutes.", nodes: ['sys-sws', 'sys-shop'], paths: [] },
+                { title: "Step 2: Ingestion", text: "Both events hit <span>Kafka</span> and receive strict offset sequence numbers.", nodes: ['sys-sws', 'sys-shop', 'sws-adapter', 'dept-adapter', 'kafka'], paths: ['path-sws-adapter', 'path-shop-adapter', 'path-adapter-kafka', 'path-dept-kafka'] },
+                { title: "Step 3: Conflict Matrix", text: "Sliding window detects collision. Applying <span>Domain Priority Policy</span>.", nodes: ['kafka', 'dept-adapter'], paths: ['path-kafka-dept'] },
+                { title: "Step 4: Resolution", text: "SWS is authoritative for Demographics. <span>SWS Wins</span>.", nodes: ['dept-adapter'], paths: [] },
+                { title: "Step 5: DLQ & Audit", text: "Losing Dept value preserved in <span>Postgres DLQ</span>. SWS value forces override on Shop Est.", nodes: ['postgres', 'sys-shop', 'dept-adapter'], paths: ['path-kafka-pg', 'path-adapter-shop'] }
+            ]
+        };
+
+        let currentInterval = null;
+
+        function animatePacket(pathId, durationMs = 1500) {
+            const motion = document.getElementById(`motion-${pathId}`);
+            const opacityAnim = document.getElementById(`opacity-${pathId}`);
+            const packet = document.getElementById(`packet-${pathId}`);
+
+            if (!motion || !packet) return;
+
+            const conn = connections.find(c => c.id === pathId);
+            if (conn) {
+                const fromEl = document.getElementById(conn.from);
+                const typeClass = Array.from(fromEl.classList).find(c => colorMap[c]);
+                const glowColor = colorMap[typeClass] || '#ffffff';
+                packet.style.filter = `drop-shadow(0 0 5px #fff) drop-shadow(0 0 15px ${glowColor})`;
+            }
+
+            const durStr = (durationMs / 1000) + 's';
+            motion.setAttribute('dur', durStr);
+            opacityAnim.setAttribute('dur', durStr);
+
+            motion.beginElement();
+        }
+
+        function clearAll() {
+            document.querySelectorAll('.node').forEach(n => {
+                n.classList.remove('active');
+                n.style.setProperty('--node-glow', 'transparent');
+            });
+            document.querySelectorAll('.path-line').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.btn').forEach(b => b.classList.remove('playing'));
+            if (currentInterval) clearInterval(currentInterval);
+        }
+
+        function playScenario(id) {
+            clearAll();
+            const btn = document.getElementById(`btn-${id.toLowerCase()}`);
+            btn.classList.add('playing');
+
+            const steps = scenarios[id];
+            let currentStep = 0;
+
+            const nTitle = document.getElementById('n-step');
+            const nText = document.getElementById('n-text');
+
+            function runStep() {
+                if (currentStep >= steps.length) {
+                    clearInterval(currentInterval);
+                    setTimeout(() => {
+                        btn.classList.remove('playing');
+                        nTitle.innerText = "Scenario Complete";
+                        nTitle.style.color = "#34d399";
+                        nText.innerHTML = "All actions verified and logged to the ledger.";
+                    }, 2000);
+                    return;
+                }
+
+                document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.path-line').forEach(p => p.classList.remove('active'));
+
+                const step = steps[currentStep];
+
+                nTitle.innerText = step.title;
+                nTitle.style.color = "var(--core-color)";
+                nText.innerHTML = step.text;
+
+                step.nodes.forEach(nodeId => {
+                    const node = document.getElementById(nodeId);
+                    if (node) {
+                        node.classList.add('active');
+                        if (node.classList.contains('sws')) node.style.setProperty('--node-glow', 'var(--sws-glow)');
+                        if (node.classList.contains('dept')) node.style.setProperty('--node-glow', 'var(--dept-glow)');
+                        if (node.classList.contains('kafka')) node.style.setProperty('--node-glow', 'var(--kafka-glow)');
+                        if (node.classList.contains('redis')) node.style.setProperty('--node-glow', 'var(--redis-glow)');
+                        if (node.classList.contains('pg')) node.style.setProperty('--node-glow', 'var(--pg-glow)');
+                        if (node.classList.contains('core')) node.style.setProperty('--node-glow', 'var(--core-glow)');
+                    }
+                });
+
+                step.paths.forEach(pathId => {
+                    const path = document.getElementById(pathId);
+                    if (path && path.classList.contains('path-line')) {
+                        path.classList.add('active');
+                    }
+                    animatePacket(pathId, 1500);
+                });
+
+                currentStep++;
+            }
+
+            runStep();
+            currentInterval = setInterval(runStep, 3500);
+        }
+    </script>
+</body>
+
+</html>
