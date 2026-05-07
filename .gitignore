@@ -1,9 +1,46 @@
-# RSA keys — never commit private keys to version control
-keys/
+﻿# ─── Sensitive / secrets ───
 *.pem
+*.key
+*.p12
+*.pfx
+keys/
+.env
+.env.*
+!.env.example
 
+# ─── Kiro / Agent tooling (never push to repo) ───
 .agent/
 .kiro/
+
+# ─── IDE ───
 .vscode/
-keys/
-*.pem
+.idea/
+*.swp
+*.swo
+
+# ─── Python ───
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+
+# ─── Node ───
+node_modules/
+dashboard/dist/
+.npm/
+
+# ─── OS ───
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Docker ───
+.docker/
+
+# ─── Logs ───
+*.log
+logs/

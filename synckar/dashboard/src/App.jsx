@@ -180,8 +180,17 @@ function App() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ action: 'retry' })
             })
-            if (res.ok) fetchDlq()
-          } catch (e) { console.error('DLQ retry failed:', e) }
+            if (res.ok) {
+              fetchDlq()
+              return { success: true }
+            } else {
+              const err = await res.json()
+              return { error: err.detail || err.error || 'Failed to retry' }
+            }
+          } catch (e) {
+            console.error('DLQ retry failed:', e)
+            return { error: e.message }
+          }
         }} />}
         {page === 'verify'    && (
           <VerifyPage
@@ -607,43 +616,49 @@ function ConflictsPage({ conflicts, onRefresh }) {
         <h2>Conflict Resolution Log</h2>
         <p>Records of simultaneous edits and how SyncKar policies resolved them.</p>
       </div>
-      <div className="table-container">
-        <div className="table-header">
-          <h3>Resolved Conflicts ({conflicts.length})</h3>
-          <button className="btn btn-outline btn-sm" onClick={onRefresh}>Refresh Log</button>
-        </div>
-        <div className="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>Target ID</th>
-              <th>Field</th>
-              <th>Policy Applied</th>
-              <th>Accepted Value</th>
-              <th>Rejected Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {conflicts.map((c, i) => (
-              <tr key={i}>
-                <td className="mono">{c.created_at?.slice(0, 19).replace('T', ' ')}</td>
-                <td><span className="badge badge-neutral">{c.ubid}</span></td>
-                <td>{c.field}</td>
-                <td><span className="badge badge-warning">{formatPolicy(c.policy_applied)}</span></td>
-                <td className="mono text-sm" style={{ color: 'var(--status-success)' }}>{c.winning_value?.slice(0, 40)}</td>
-                <td className="mono text-sm" style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>{c.losing_value?.slice(0, 40)}</td>
-              </tr>
-            ))}
-            {conflicts.length === 0 && (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
-                No conflicts recorded.
-              </td></tr>
-            )}
-          </tbody>
-        </table>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h3>Resolved Conflicts ({conflicts.length})</h3>
+        <button className="btn btn-outline btn-sm" onClick={onRefresh}>Refresh Log</button>
       </div>
+      
+      {conflicts.length === 0 ? (
+        <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
+          No conflicts recorded. Trigger Scenario C to see a conflict resolution in action.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {conflicts.map((c, i) => (
+            <div key={i} className="conflict-card" style={{ margin: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <h4 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  ⚡ Conflict on <code style={{ backgroundColor: 'rgba(255,255,255,0.5)', padding: '2px 6px', borderRadius: '4px' }}>{c.field}</code>
+                </h4>
+                <div style={{ textAlign: 'right' }}>
+                  <span className="badge badge-neutral">{c.ubid}</span>
+                  <div className="mono text-sm" style={{ marginTop: '4px', color: '#713f12' }}>{c.created_at?.slice(0, 19).replace('T', ' ')}</div>
+                </div>
+              </div>
+              <p style={{ fontSize: '14px', color: '#713f12', marginBottom: '16px', lineHeight: 1.6 }}>
+                <strong>Cause:</strong> Two systems updated the field simultaneously. SyncKar's sliding-window detector flagged a collision. <br />
+                <strong>Resolution:</strong> Automatically applied the <strong style={{ color: '#b45309', backgroundColor: '#fef3c7', padding: '2px 6px', borderRadius: '4px' }}>{formatPolicy(c.policy_applied)}</strong> policy without human intervention.
+              </p>
+              <div className="conflict-detail-grid">
+                <div className="conflict-value-box conflict-winner">
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--status-success)', marginBottom: '6px' }}>✓ ACCEPTED — Propagated to targets</div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', wordBreak: 'break-word' }}>{c.winning_value}</div>
+                </div>
+                <div className="conflict-value-box conflict-loser">
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--status-error)', marginBottom: '6px' }}>✗ DISCARDED — Prevented data corruption</div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', wordBreak: 'break-word' }}>{c.losing_value}</div>
+                </div>
+              </div>
+              <div style={{ fontSize: '13px', color: '#713f12', marginTop: '12px', opacity: 0.8 }}>
+                <strong>Audit Note:</strong> The rejected value is preserved in the immutable ledger for legal traceability.
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -651,8 +666,23 @@ function ConflictsPage({ conflicts, onRefresh }) {
 // ─── DLQ ─────────────────────────────────────────────────────────────────────
 
 function DLQPage({ dlq, onRetry }) {
+  const [toast, setToast] = useState(null)
+
+  const handleRetry = async (id) => {
+    const res = await onRetry(id)
+    if (res?.error) {
+      setToast({ msg: res.error, type: 'error' })
+    } else {
+      setToast({ msg: 'Retry initiated successfully', type: 'success' })
+    }
+    setTimeout(() => setToast(null), 5000)
+  }
+
   return (
     <div>
+      {toast && (
+        <div className={`toast toast-${toast.type}`}>{toast.msg}</div>
+      )}
       <div className="page-title">
         <h2>Dead Letter Queue (DLQ)</h2>
         <p>Messages that failed to process after maximum retries. A Data Steward reviews and resolves these items.</p>
@@ -692,7 +722,7 @@ function DLQPage({ dlq, onRetry }) {
                 <td>
                   <button 
                     className="btn btn-outline btn-sm" 
-                    onClick={() => onRetry(item.id)}
+                    onClick={() => handleRetry(item.id)}
                     disabled={item.status === 'RETRIED' || item.status === 'RESOLVED'}
                   >
                     Retry
